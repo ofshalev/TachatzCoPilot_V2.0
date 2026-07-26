@@ -214,16 +214,19 @@
 
 .event-type-buttons {
   display: grid;
-  grid-template-columns: repeat(5, minmax(105px, 1fr));
+  grid-template-columns: repeat(5, 135px);
   gap: 8px;
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
+  margin-right: 0;
+  margin-left: auto;
 }
 
 .event-type-choice-button {
-  min-height: 46px;
-  padding: 8px 10px;
+  min-height: 42px;
+  padding: 7px 9px;
   border: 1px solid #d7deea;
-  border-radius: 10px;
+  border-radius: 9px;
   background: #f8fafc;
   color: #182033;
   font: inherit;

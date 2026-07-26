@@ -51,10 +51,17 @@
     .clickable-route.selected { background:#2563eb; color:#fff; font-weight:700; }
     .selection-hint { margin:10px 0; padding:9px 12px; border-radius:9px; background:#f8fafc; border:1px solid var(--line); color:#475569; font-size:13px; }
     .event-meta-section { margin-bottom:18px; }
-    .event-meta-grid { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 18px; width: 100%; max-width: none; align-items: start; }
+    .event-meta-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 24px;
+    width: 100%;
+    max-width: none;
+    align-items: start;
+    }
     .title-generator-grid {
       display: grid;
-      grid-template-columns: minmax(390px, 1fr) max-content;
+      grid-template-columns: minmax(0, 1fr) 220px;
       gap: 24px;
       margin-top: 18px;
       align-items: start;
@@ -216,16 +223,15 @@
 
 .event-type-field {
   grid-column: 1;
-  min-width: 0;
 }
 
 .location-fields-stack {
   grid-column: 2;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
+  width: 220px;
   min-width: 0;
-  padding-top: 0;
 }
     
 .event-type-buttons {
@@ -332,25 +338,16 @@
   color: #315be8;
   box-shadow: 0 0 0 1px rgba(76, 120, 255, 0.16);
 }
-
 .operator-buttons {
   display: grid;
   grid-template-columns: repeat(6, minmax(90px, 1fr));
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
-.operator-choice-button img {
-  width: 100%;
-  max-width: 100px;
-  height: 34px;
-  object-fit: contain;
-  display: block;
-}
-    
 .operator-choice-button {
-  min-height: 52px;
-  padding: 10px 16px;
+  min-height: 46px;
+  padding: 7px 10px;
   border: 1px solid #d7deea;
   border-radius: 10px;
   background: #f8fafc;
@@ -358,9 +355,7 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-}
 
-.operator-choice-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -368,8 +363,8 @@
 
 .operator-choice-button img {
   width: 100%;
-  max-width: 105px;
-  height: 34px;
+  max-width: 92px;
+  height: 30px;
   object-fit: contain;
   display: block;
 }
@@ -391,7 +386,6 @@
     grid-template-columns: repeat(2, minmax(110px, 1fr));
   }
 }
-
 @media (max-width: 1150px) {
   .title-generator-grid {
     grid-template-columns: 1fr;
@@ -418,6 +412,7 @@
 
   .time-wheel-control {
     width: 220px;
+    align-items: stretch;
   }
 }
     
@@ -434,6 +429,7 @@
   user-select: none;
   caret-color: transparent;
   margin: 0;
+  box-sizing: border-box;
 }
 
 #reportTimeInput::-webkit-calendar-picker-indicator {

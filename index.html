@@ -609,6 +609,40 @@
   box-sizing: border-box;
   flex: none;
 }
+
+.operator-buttons,
+.event-type-buttons {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.operator-buttons {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.event-type-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.custom-event-type-input {
+  width: 100%;
+  max-width: 420px;
+  min-height: 42px;
+  box-sizing: border-box;
+  margin-top: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 15px;
+  direction: rtl;
+  text-align: right;
+}
     
   </style>
 </head>
@@ -679,7 +713,17 @@
         <option value="רכבים חוסמים">רכבים חוסמים</option>
         <option value="תאונה">תאונה</option>
         <option value="תקלת רמזורים">תקלת רמזורים</option>
+        <option value="אחר">אחר</option>
       </select>
+      
+      <input
+        id="customEventTypeInput"
+        class="custom-event-type-input"
+        type="text"
+        placeholder="תאר את סוג האירוע"
+        hidden
+      />
+    
     </div>
 
     <div class="location-fields-stack location-area">
@@ -2401,7 +2445,7 @@ function updateRealtimeEventTitle() {
     primaryLocationType === 'כביש' && primaryLocation
       ? `כביש ${primaryLocation}`
       : primaryLocation;
-  const eventType = cleanText(document.getElementById('eventTypeSelect').value);
+  const eventType = getEffectiveEventType();
   const location = cleanText(document.getElementById('eventLocationInput').value);
   const date = cleanText(document.getElementById('eventDateInput').value);
   state.eventTitle = [
@@ -2459,7 +2503,7 @@ function updateEventDescription() {
     secondaryLocationType && location
       ? `${secondaryLocationType} ${location}`
       : location;
-  const eventType = cleanText(document.getElementById('eventTypeSelect').value);
+  const eventType = getEffectiveEventType();
   const verifications = getSelectedEventVerifications();
   const verification = formatHebrewList(verifications);
   const responseTypes = getSelectedEventResponseTypes();
@@ -2831,7 +2875,7 @@ function updateSelectionStatus() {
   const selectedRoutes = selectedResults.reduce((sum, r) => sum + r.affected_count, 0);
   const fullStops = selectedResults.filter(isWholeStopSelected).length;
   const partialStops = selectedResults.length - fullStops;
-  const eventType = document.getElementById('eventTypeSelect').value.trim();
+  const eventType = getEffectiveEventType();
   const createButton = document.getElementById('createDeveloperMessageBtn');
   const status = document.getElementById('selectionStatus');
 
@@ -3116,7 +3160,7 @@ renderEventTimeRanges();
 
 function createRealtimeDeveloperOutputs() {
   const output = document.getElementById('appsMessageOutput');
-  const eventType = document.getElementById('eventTypeSelect').value.trim();
+  const eventType = getEffectiveEventType();
   const fullyCancelledStops = lastImpactResults.filter(isWholeStopSelected);
 
   if (!eventType) {
@@ -3443,6 +3487,45 @@ function downloadStopCodesFile(stopCodes, fileName = 'stop_codes.txt') {
   return true;
 }
 
+function updateCustomEventTypeVisibility() {
+  const select =
+    document.getElementById('eventTypeSelect');
+
+  const input =
+    document.getElementById('customEventTypeInput');
+
+  if (!select || !input) return;
+
+  const showCustomInput =
+    select.value === 'אחר';
+
+  input.hidden = !showCustomInput;
+
+  if (showCustomInput) {
+    input.focus();
+  } else {
+    input.value = '';
+  }
+}
+
+function getEffectiveEventType() {
+  const selectedType = cleanText(
+    document.getElementById(
+      'eventTypeSelect'
+    ).value
+  );
+
+  if (selectedType !== 'אחר') {
+    return selectedType;
+  }
+
+  return cleanText(
+    document.getElementById(
+      'customEventTypeInput'
+    ).value
+  );
+}
+  
 function setCurrentReportingTime() {
   const timeInput = document.getElementById('reportTimeInput');
   if (!timeInput) {
@@ -3885,6 +3968,7 @@ document
 
 
 document.getElementById('eventTypeSelect').addEventListener('change', () => {
+  updateCustomEventTypeVisibility();
   updateRealtimeEventTitle();
   updateEventDescription();
   document.getElementById('appsMessageOutput').value = '';

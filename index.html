@@ -208,6 +208,54 @@
       .event-meta-grid { grid-template-columns:1fr; max-width:none; }
     }
 
+.event-type-field {
+  grid-column: 1 / -1;
+}
+
+.event-type-buttons {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.event-type-choice-button {
+  min-height: 50px;
+  padding: 10px 12px;
+  border: 1px solid #d7deea;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #182033;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.event-type-choice-button:hover {
+  border-color: #8da8ff;
+  background: #f2f6ff;
+}
+
+.event-type-choice-button.selected {
+  border-color: #4c78ff;
+  background: #edf3ff;
+  color: #315be8;
+  box-shadow: 0 0 0 1px rgba(76, 120, 255, 0.16);
+}
+
+@media (max-width: 1050px) {
+  .event-type-buttons {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .event-type-buttons {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}
+
+    
 .operator-field {
   grid-column: 1 / -1;
 }
@@ -315,24 +363,32 @@
           <input id="eventCityInput" type="text" placeholder="הזן עיר" />
         </div>
 
-        <div class="field-group">
-          <label for="eventTypeSelect">סוג האירוע</label>
-          <select id="eventTypeSelect">
-            <option value="">בחר סוג אירוע...</option>
-            <option value="אירוע ספורט">אירוע ספורט</option>
-            <option value="אירוע תרבות">אירוע תרבות</option>
-            <option value="הלוויה">הלוויה</option>
-            <option value="הפגנה">הפגנה</option>
-            <option value="חסימה משטרתית">חסימה משטרתית</option>
-            <option value="חתונה">חתונה</option>
-            <option value="טקס">טקס</option>
-            <option value="מפגע בטיחותי">מפגע בטיחותי</option>
-            <option value="עבודות">עבודות</option>
-            <option value="רכב תקוע">רכב תקוע</option>
-            <option value="תאונה">תאונה</option>
-            <option value="תקלת רמזורים">תקלת רמזורים</option>
-          </select>
-        </div>
+       <div class="field-group event-type-field">
+        <label>סוג האירוע</label>
+      
+        <div
+          id="eventTypeButtons"
+          class="event-type-buttons"
+          role="radiogroup"
+          aria-label="סוג האירוע"
+        ></div>
+      
+        <select id="eventTypeSelect" hidden>
+          <option value="">בחר סוג אירוע...</option>
+          <option value="תאונה">תאונה</option>
+          <option value="חסימה משטרתית">חסימה משטרתית</option>
+          <option value="אירוע ספורט">אירוע ספורט</option>
+          <option value="אירוע תרבות">אירוע תרבות</option>
+          <option value="הלוויה">הלוויה</option>
+          <option value="הפגנה">הפגנה</option>
+          <option value="תקלת רמזורים">תקלת רמזורים</option>
+          <option value="חתונה">חתונה</option>
+          <option value="טקס">טקס</option>
+          <option value="מפגע בטיחותי">מפגע בטיחותי</option>
+          <option value="עבודות">עבודות</option>
+          <option value="רכב תקוע">רכב תקוע</option>
+        </select>
+      </div>
 
         <div class="field-group">
           <label for="eventLocationInput">מיקום</label>
@@ -3041,7 +3097,61 @@ document.addEventListener(
   initializeReportingOperatorButtons
 );
   
+function initializeEventTypeButtons() {
+  const select = document.getElementById('eventTypeSelect');
+  const container = document.getElementById('eventTypeButtons');
 
+  if (!select || !container) return;
+
+  container.innerHTML = '';
+
+  [...select.options].forEach(option => {
+    if (!option.value) return;
+
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.className = 'event-type-choice-button';
+    button.textContent = option.textContent.trim();
+    button.dataset.value = option.value;
+    button.setAttribute('role', 'radio');
+    button.setAttribute('aria-checked', 'false');
+
+    button.addEventListener('click', () => {
+      const isAlreadySelected =
+        select.value === option.value;
+
+      select.value =
+        isAlreadySelected ? '' : option.value;
+
+      container
+        .querySelectorAll('.event-type-choice-button')
+        .forEach(item => {
+          const selected =
+            item.dataset.value === select.value;
+
+          item.classList.toggle('selected', selected);
+
+          item.setAttribute(
+            'aria-checked',
+            selected ? 'true' : 'false'
+          );
+        });
+
+      select.dispatchEvent(
+        new Event('change', { bubbles: true })
+      );
+    });
+
+    container.appendChild(button);
+  });
+}
+
+document.addEventListener(
+  'DOMContentLoaded',
+  initializeEventTypeButtons
+);
+  
 document.getElementById('impactBtn').addEventListener('click', async () => {
   const btn = document.getElementById('impactBtn');
   const operatorMessage = document.getElementById('operatorMessageInput').value;

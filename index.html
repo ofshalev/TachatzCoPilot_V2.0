@@ -51,8 +51,14 @@
     .clickable-route.selected { background:#2563eb; color:#fff; font-weight:700; }
     .selection-hint { margin:10px 0; padding:9px 12px; border-radius:9px; background:#f8fafc; border:1px solid var(--line); color:#475569; font-size:13px; }
     .event-meta-section { margin-bottom:18px; }
-    .event-meta-grid { display:grid; grid-template-columns:repeat(2, minmax(220px, 1fr)); gap:14px; max-width:720px; }
-    .title-generator-grid {display: grid; grid-template-columns: repeat(2, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
+    .event-meta-grid { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 18px; width: 100%; max-width: none; align-items: start; }
+    .title-generator-grid {
+      display: grid;
+      grid-template-columns: minmax(390px, 1fr) max-content;
+      gap: 24px;
+      margin-top: 18px;
+      align-items: start;
+    }
     .field-group { display:flex; flex-direction:column; gap:7px; min-width:0; }
     .field-group label { font-weight:700; }
     .field-group input,
@@ -209,17 +215,25 @@
     }
 
 .event-type-field {
-  grid-column: 1 / -1;
+  grid-column: 2;
+  min-width: 0;
 }
 
+.location-fields-stack {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding-top: 0;
+}
+    
 .event-type-buttons {
   display: grid;
   grid-template-columns: repeat(5, 135px);
   gap: 8px;
   width: fit-content;
   max-width: 100%;
-  margin-right: 0;
-  margin-left: auto;
 }
 
 .event-type-choice-button {
@@ -283,8 +297,9 @@
 
 .location-input-row input[type="text"] {
   width: 100%;
-  max-width: 360px;
-  flex: 1 1 300px;
+  min-width: 200px;
+  max-width: 390px;
+  flex: 1 1 280px;
 }
     
 .location-type-button:hover {
@@ -316,10 +331,6 @@
   background: #edf3ff;
   color: #315be8;
   box-shadow: 0 0 0 1px rgba(76, 120, 255, 0.16);
-}
-    
-.operator-field {
-  grid-column: 1 / -1;
 }
 
 .operator-buttons {
@@ -381,6 +392,35 @@
   }
 }
 
+@media (max-width: 1150px) {
+  .title-generator-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-type-field,
+  .location-fields-stack {
+    grid-column: 1;
+  }
+
+  .event-type-field {
+    grid-row: 1;
+  }
+
+  .location-fields-stack {
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 800px) {
+  .event-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .time-wheel-control {
+    width: 220px;
+  }
+}
+    
 #reportTimeInput {
   width: 220px;
   min-height: 58px;
@@ -393,8 +433,7 @@
   cursor: ns-resize;
   user-select: none;
   caret-color: transparent;
-  margin-left: auto;
-  margin-right: 0;
+  margin: 0;
 }
 
 #reportTimeInput::-webkit-calendar-picker-indicator {
@@ -403,8 +442,8 @@
 }
 
 .time-wheel-control {
-  width: 100%;
-  align-items: flex-start;
+  width: 220px;
+  align-items: stretch;
 }
 
     
@@ -421,7 +460,7 @@
 
     <div class="event-meta-section">
       <div class="event-meta-grid">
-        <div class="field-group operator-field">
+        <div class="field-group">
           <label>מפעיל מדווח</label>
           <div id="reportingOperatorButtons" class="operator-buttons"></div>
           <select id="reportingOperatorSelect" hidden>
@@ -477,67 +516,70 @@
         </select>
       </div>
 
-      <div class="field-group">
-        <label for="eventCityInput">מיקום ראשי</label>
-      
-        <div class="location-input-row">
-          <div
-            id="primaryLocationTypeButtons"
-            class="location-type-buttons"
-            role="radiogroup"
-            aria-label="סוג מיקום ראשי"
+    <div class="location-fields-stack">
+
+    <div class="field-group">
+      <label for="eventCityInput">מיקום ראשי</label>
+
+      <div class="location-input-row">
+        <div
+          id="primaryLocationTypeButtons"
+          class="location-type-buttons"
+          role="radiogroup"
+          aria-label="סוג מיקום ראשי"
+        >
+          <button
+            type="button"
+            class="location-type-button"
+            data-primary-location-type="עיר"
           >
-            <button
-              type="button"
-              class="location-type-button"
-              data-primary-location-type="עיר"
-            >
-              עיר
-            </button>
-      
-            <button
-              type="button"
-              class="location-type-button"
-              data-primary-location-type="כביש"
-            >
-              כביש
-            </button>
-          </div>
-      
-          <input
-            id="eventCityInput"
-            type="text"
-            placeholder="הזן מיקום ראשי"
-          />
+            עיר
+          </button>
+
+          <button
+            type="button"
+            class="location-type-button"
+            data-primary-location-type="כביש"
+          >
+            כביש
+          </button>
         </div>
-      
-        <input id="primaryLocationType" type="hidden" value="" />
-      </div>
-        
-       <div class="field-group">
-        <label for="eventLocationInput">מיקום משני</label>
-      
-        <div class="location-input-row">
-          <div
-            id="secondaryLocationTypeButtons"
-            class="location-type-buttons"
-            role="radiogroup"
-            aria-label="סוג מיקום משני"
-          ></div>
-      
-          <input
-            id="eventLocationInput"
-            type="text"
-            placeholder="הזן מיקום משני"
-          />
-        </div>
-      
-        <input id="secondaryLocationType" type="hidden" value="" />
+
+        <input
+          id="eventCityInput"
+          type="text"
+          placeholder="הזן מיקום ראשי"
+        />
       </div>
 
-        <div class="field-group">
-          <input id="eventDateInput" type="hidden" />
-        </div>
+      <input id="primaryLocationType" type="hidden" value="" />
+    </div>
+
+    <div class="field-group">
+      <label for="eventLocationInput">מיקום משני</label>
+
+      <div class="location-input-row">
+        <div
+          id="secondaryLocationTypeButtons"
+          class="location-type-buttons"
+          role="radiogroup"
+          aria-label="סוג מיקום משני"
+        ></div>
+
+        <input
+          id="eventLocationInput"
+          type="text"
+          placeholder="הזן מיקום משני"
+        />
+      </div>
+
+      <input id="secondaryLocationType" type="hidden" value="" />
+    </div>
+
+  </div>
+
+  <input id="eventDateInput" type="hidden" />
+</div>
       </div>
 
       <div class="event-classification-grid">

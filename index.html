@@ -537,6 +537,78 @@
     grid-row: 2;
   }
 }
+
+  .event-details-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-areas:
+    "time operator"
+    "locations event-type"
+    "response verification";
+  column-gap: 28px;
+  row-gap: 22px;
+  align-items: start;
+  direction: ltr;
+}
+
+.event-details-layout > * {
+  direction: rtl;
+}
+
+.operator-area {
+  grid-area: operator;
+}
+
+.reporting-time-area {
+  grid-area: time;
+  width: 220px;
+}
+
+.event-type-area {
+  grid-area: event-type;
+}
+
+.location-area {
+  grid-area: locations;
+  width: 220px;
+}
+
+.response-area {
+  grid-area: response;
+}
+
+.verification-area {
+  grid-area: verification;
+}
+
+.location-fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 220px;
+}
+
+.location-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 220px;
+}
+
+.location-input-row .location-type-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.location-input-row input[type="text"] {
+  width: 220px;
+  height: 42px;
+  min-height: 42px;
+  box-sizing: border-box;
+  flex: none;
+}
     
   </style>
 </head>
@@ -550,151 +622,235 @@
     <h2>1. הזנת פרטי האירוע ויצירת כותרת ותיאור</h2>
 
     <div class="event-meta-section">
-      <div class="event-meta-grid">
-        <div class="field-group">
-          <label>מפעיל מדווח</label>
-          <div id="reportingOperatorButtons" class="operator-buttons"></div>
-          <select id="reportingOperatorSelect" hidden>
-            <option value="">בחר מפעיל...</option>
-            <option value="אגד">אגד</option>
-            <option value="אפיקים">אפיקים</option>
-            <option value="דן">דן</option>
-            <option value="מטרופולין">מטרופולין</option>
-            <option value="סופרבוס">סופרבוס</option>
-            <option value="קווים">קווים</option>
-          </select>
+
+  <div class="event-details-layout">
+
+    <div class="field-group operator-area">
+      <label>מפעיל מדווח</label>
+
+      <div
+        id="reportingOperatorButtons"
+        class="operator-buttons"
+      ></div>
+
+      <select id="reportingOperatorSelect" hidden>
+        <option value="">בחר מפעיל...</option>
+        <option value="אגד">אגד</option>
+        <option value="אפיקים">אפיקים</option>
+        <option value="דן">דן</option>
+        <option value="מטרופולין">מטרופולין</option>
+        <option value="סופרבוס">סופרבוס</option>
+        <option value="קווים">קווים</option>
+      </select>
     </div>
 
-        <div class="field-group time-wheel-control" id="reportingTimeWheel">
-          <label for="reportTimeInput">שעת דיווח</label>
-          <input id="reportTimeInput" type="time">
-        </div>
-      </div>
+    <div
+      class="field-group time-wheel-control reporting-time-area"
+      id="reportingTimeWheel"
+    >
+      <label for="reportTimeInput">שעת דיווח</label>
+      <input id="reportTimeInput" type="time">
+    </div>
 
-      <div class="title-generator-grid">
-        
+    <div class="field-group event-type-field event-type-area">
+      <label>סוג האירוע</label>
 
-       <div class="field-group event-type-field">
-        <label>סוג האירוע</label>
-      
-        <div
-          id="eventTypeButtons"
-          class="event-type-buttons"
-          role="radiogroup"
-          aria-label="סוג האירוע"
-        ></div>
-      
-        <select id="eventTypeSelect" hidden>
-          <option value="">בחר סוג אירוע...</option>
-        
-          <option value="אוטובוס תקוע">אוטובוס תקוע</option>
-          <option value="אירוע ספורט">אירוע ספורט</option>
-          <option value="אירוע תרבות">אירוע תרבות</option>
-          <option value="הלוויה">הלוויה</option>
-          <option value="הפגנה">הפגנה</option>
-        
-          <option value="חסימה משטרתית">חסימה משטרתית</option>
-          <option value="חתונה">חתונה</option>
-          <option value="טקס">טקס</option>
-          <option value="מפגע בטיחותי">מפגע בטיחותי</option>
-          <option value="משאית תקועה">משאית תקועה</option>
-        
-          <option value="עבודות">עבודות</option>
-          <option value="רכב תקוע">רכב תקוע</option>
-          <option value="רכבים חוסמים">רכבים חוסמים</option>
-          <option value="תאונה">תאונה</option>
-          <option value="תקלת רמזורים">תקלת רמזורים</option>
-        </select>
-      </div>
+      <div
+        id="eventTypeButtons"
+        class="event-type-buttons"
+        role="radiogroup"
+        aria-label="סוג האירוע"
+      ></div>
 
-    <div class="location-fields-stack">
+      <select id="eventTypeSelect" hidden>
+        <option value="">בחר סוג אירוע...</option>
+        <option value="אוטובוס תקוע">אוטובוס תקוע</option>
+        <option value="אירוע ספורט">אירוע ספורט</option>
+        <option value="אירוע תרבות">אירוע תרבות</option>
+        <option value="הלוויה">הלוויה</option>
+        <option value="הפגנה">הפגנה</option>
+        <option value="חסימה משטרתית">חסימה משטרתית</option>
+        <option value="חתונה">חתונה</option>
+        <option value="טקס">טקס</option>
+        <option value="מפגע בטיחותי">מפגע בטיחותי</option>
+        <option value="משאית תקועה">משאית תקועה</option>
+        <option value="עבודות">עבודות</option>
+        <option value="רכב תקוע">רכב תקוע</option>
+        <option value="רכבים חוסמים">רכבים חוסמים</option>
+        <option value="תאונה">תאונה</option>
+        <option value="תקלת רמזורים">תקלת רמזורים</option>
+      </select>
+    </div>
 
-    <div class="field-group">
-      <label for="eventCityInput">מיקום ראשי</label>
+    <div class="location-fields-stack location-area">
 
-      <div class="location-input-row">
-        <div
-          id="primaryLocationTypeButtons"
-          class="location-type-buttons"
-          role="radiogroup"
-          aria-label="סוג מיקום ראשי"
-        >
-          <button
-            type="button"
-            class="location-type-button"
-            data-primary-location-type="עיר"
+      <div class="field-group">
+        <label for="eventCityInput">מיקום ראשי</label>
+
+        <div class="location-input-row">
+
+          <div
+            id="primaryLocationTypeButtons"
+            class="location-type-buttons"
+            role="radiogroup"
+            aria-label="סוג מיקום ראשי"
           >
-            עיר
-          </button>
+            <button
+              type="button"
+              class="location-type-button"
+              data-primary-location-type="עיר"
+            >
+              עיר
+            </button>
 
-          <button
-            type="button"
-            class="location-type-button"
-            data-primary-location-type="כביש"
-          >
-            כביש
-          </button>
+            <button
+              type="button"
+              class="location-type-button"
+              data-primary-location-type="כביש"
+            >
+              כביש
+            </button>
+          </div>
+
+          <input
+            id="eventCityInput"
+            type="text"
+            placeholder="הזן מיקום ראשי"
+          />
         </div>
 
         <input
-          id="eventCityInput"
-          type="text"
-          placeholder="הזן מיקום ראשי"
+          id="primaryLocationType"
+          type="hidden"
+          value=""
         />
       </div>
 
-      <input id="primaryLocationType" type="hidden" value="" />
-    </div>
+      <div class="field-group">
+        <label for="eventLocationInput">מיקום משני</label>
 
-    <div class="field-group">
-      <label for="eventLocationInput">מיקום משני</label>
+        <div class="location-input-row">
 
-      <div class="location-input-row">
-        <div
-          id="secondaryLocationTypeButtons"
-          class="location-type-buttons"
-          role="radiogroup"
-          aria-label="סוג מיקום משני"
-        ></div>
+          <div
+            id="secondaryLocationTypeButtons"
+            class="location-type-buttons"
+            role="radiogroup"
+            aria-label="סוג מיקום משני"
+          ></div>
+
+          <input
+            id="eventLocationInput"
+            type="text"
+            placeholder="הזן מיקום משני"
+          />
+        </div>
 
         <input
-          id="eventLocationInput"
-          type="text"
-          placeholder="הזן מיקום משני"
+          id="secondaryLocationType"
+          type="hidden"
+          value=""
         />
       </div>
 
-      <input id="secondaryLocationType" type="hidden" value="" />
     </div>
+
+    <div class="field-group verification-area">
+      <label>אימות האירוע</label>
+
+      <div
+        class="verification-group"
+        role="group"
+        aria-label="אימות האירוע"
+      >
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventVerification"
+            value="ווייז"
+          >
+          ווייז
+        </label>
+
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventVerification"
+            value="מוקד עירוני"
+          >
+          מוקד עירוני
+        </label>
+
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventVerification"
+            value="מצלמות"
+          >
+          מצלמות
+        </label>
+
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventVerification"
+            value="שיחזור"
+          >
+          שיחזור
+        </label>
+
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventVerification"
+            value="תמונות"
+          >
+          תמונות
+        </label>
+      </div>
+    </div>
+
+    <div class="field-group response-area">
+      <label>סוג התגובה לאירוע</label>
+
+      <div
+        class="verification-group"
+        role="group"
+        aria-label="סוג התגובה לאירוע"
+      >
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventResponseType"
+            value="דילוג תחנות"
+          >
+          דילוג תחנות
+        </label>
+
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventResponseType"
+            value="סטייה ללא דילוג תחנות"
+          >
+          סטייה ללא דילוג תחנות
+        </label>
+
+        <label class="verification-option">
+          <input
+            type="checkbox"
+            name="eventResponseType"
+            value="עיכובים"
+          >
+          עיכובים
+        </label>
+      </div>
+    </div>
+
+    <input id="eventDateInput" type="hidden" />
 
   </div>
 
-  <input id="eventDateInput" type="hidden" />
 </div>
-      </div>
-
-      <div class="event-classification-grid">
-        <div class="field-group">
-          <label>אימות האירוע</label>
-          <div class="verification-group" role="group" aria-label="אימות האירוע">
-            <label class="verification-option"><input type="checkbox" name="eventVerification" value="ווייז"> ווייז</label>
-            <label class="verification-option"><input type="checkbox" name="eventVerification" value="מוקד עירוני"> מוקד עירוני</label>
-            <label class="verification-option"><input type="checkbox" name="eventVerification" value="מצלמות"> מצלמות</label>
-            <label class="verification-option"><input type="checkbox" name="eventVerification" value="שיחזור"> שיחזור</label>
-            <label class="verification-option"><input type="checkbox" name="eventVerification" value="תמונות"> תמונות</label>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label>סוג התגובה לאירוע</label>
-          <div class="verification-group" role="group" aria-label="סוג התגובה לאירוע">
-            <label class="verification-option"><input type="checkbox" name="eventResponseType" value="דילוג תחנות"> דילוג תחנות</label>
-            <label class="verification-option"><input type="checkbox" name="eventResponseType" value="סטייה ללא דילוג תחנות"> סטייה ללא דילוג תחנות</label>
-            <label class="verification-option"><input type="checkbox" name="eventResponseType" value="עיכובים"> עיכובים</label>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div id="eventTitleBox" class="event-title-box" style="display:block">
       <label for="eventTitle">כותרת האירוע</label>

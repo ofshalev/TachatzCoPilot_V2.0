@@ -3218,7 +3218,7 @@ function initializeLocationTypeButtons() {
   function renderSecondaryButtons(primaryType) {
     secondaryButtonsContainer.innerHTML = '';
     secondaryTypeInput.value = '';
-    
+
     const options =
       primaryType === 'כביש'
         ? ['צומת', 'מחלף']
@@ -3253,11 +3253,33 @@ function initializeLocationTypeButtons() {
 
       secondaryButtonsContainer.appendChild(button);
     });
+
+    const defaultSecondaryType =
+      primaryType === 'עיר'
+        ? 'רחוב'
+        : primaryType === 'כביש'
+          ? 'צומת'
+          : '';
+
+    if (defaultSecondaryType) {
+      secondaryTypeInput.value = defaultSecondaryType;
+
+      const defaultButton =
+        secondaryButtonsContainer.querySelector(
+          `[data-secondary-location-type="${defaultSecondaryType}"]`
+        );
+
+      if (defaultButton) {
+        defaultButton.classList.add('selected');
+      }
+    }
   }
 
   primaryButtonsContainer
     .querySelectorAll('[data-primary-location-type]')
     .forEach(button => {
+      button.tabIndex = -1;
+
       button.addEventListener('click', () => {
         const value =
           button.dataset.primaryLocationType;
@@ -3272,27 +3294,6 @@ function initializeLocationTypeButtons() {
               item.dataset.primaryLocationType === value
             );
           });
-
-
-    const defaultSecondaryType =
-      primaryType === 'עיר'
-        ? 'רחוב'
-        : primaryType === 'כביש'
-          ? 'צומת'
-          : '';
-    
-    if (defaultSecondaryType) {
-      secondaryTypeInput.value = defaultSecondaryType;
-    
-      const defaultButton =
-        secondaryButtonsContainer.querySelector(
-          `[data-secondary-location-type="${defaultSecondaryType}"]`
-        );
-    
-      if (defaultButton) {
-        defaultButton.classList.add('selected');
-      }
-    }
 
         renderSecondaryButtons(value);
 
@@ -3319,14 +3320,6 @@ document.addEventListener(
   'DOMContentLoaded',
   initializeLocationTypeButtons
 );
-
-  
-  
-document.addEventListener(
-  'DOMContentLoaded',
-  initializeLocationTypeButtons
-);
-
   
 function initializeReportingOperatorButtons() {
   const select = document.getElementById('reportingOperatorSelect');

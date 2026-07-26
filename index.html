@@ -258,6 +258,40 @@
   }
 }
 
+@media (max-width: 700px) {
+  .location-input-row {
+    flex-wrap: wrap;
+  }
+
+  .location-input-row input[type="text"] {
+    max-width: none;
+    flex-basis: 100%;
+  }
+}
+
+.location-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: rtl;
+}
+
+.location-input-row .location-type-buttons {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+}
+
+.location-input-row input[type="text"] {
+  width: 100%;
+  max-width: 360px;
+  flex: 1 1 300px;
+}
+    
+.location-type-button:hover {
+  border-color: #8da8ff;
+  background: #f2f6ff;
+}
+    
 .location-type-buttons {
   display: flex;
   gap: 8px;
@@ -275,11 +309,6 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-}
-
-.location-type-button:hover {
-  border-color: #8da8ff;
-  background: #f2f6ff;
 }
 
 .location-type-button.selected {
@@ -451,63 +480,59 @@
       <div class="field-group">
         <label for="eventCityInput">מיקום ראשי</label>
       
-        <div
-          id="primaryLocationTypeButtons"
-          class="location-type-buttons"
-          role="radiogroup"
-          aria-label="סוג מיקום ראשי"
-        >
-          <button
-            type="button"
-            class="location-type-button"
-            data-primary-location-type="עיר"
+        <div class="location-input-row">
+          <div
+            id="primaryLocationTypeButtons"
+            class="location-type-buttons"
+            role="radiogroup"
+            aria-label="סוג מיקום ראשי"
           >
-            עיר
-          </button>
+            <button
+              type="button"
+              class="location-type-button"
+              data-primary-location-type="עיר"
+            >
+              עיר
+            </button>
       
-          <button
-            type="button"
-            class="location-type-button"
-            data-primary-location-type="כביש"
-          >
-            כביש
-          </button>
+            <button
+              type="button"
+              class="location-type-button"
+              data-primary-location-type="כביש"
+            >
+              כביש
+            </button>
+          </div>
+      
+          <input
+            id="eventCityInput"
+            type="text"
+            placeholder="הזן מיקום ראשי"
+          />
         </div>
       
-        <input
-          id="eventCityInput"
-          type="text"
-          placeholder="הזן מיקום ראשי"
-        />
-      
-        <input
-          id="primaryLocationType"
-          type="hidden"
-          value=""
-        />
+        <input id="primaryLocationType" type="hidden" value="" />
       </div>
         
        <div class="field-group">
         <label for="eventLocationInput">מיקום משני</label>
       
-        <div
-          id="secondaryLocationTypeButtons"
-          class="location-type-buttons"
-          role="radiogroup"
-          aria-label="סוג מיקום משני"
-        ></div>
+        <div class="location-input-row">
+          <div
+            id="secondaryLocationTypeButtons"
+            class="location-type-buttons"
+            role="radiogroup"
+            aria-label="סוג מיקום משני"
+          ></div>
       
-        <input
-          id="eventLocationInput"
-          type="text"
-          placeholder="הזן מיקום משני"
-        />
+          <input
+            id="eventLocationInput"
+            type="text"
+            placeholder="הזן מיקום משני"
+          />
+        </div>
       
-        <input
-          id="secondaryLocationType"
-          type="hidden"
-          value=""
-        />
+        <input id="secondaryLocationType" type="hidden" value="" />
       </div>
 
         <div class="field-group">

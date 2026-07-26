@@ -52,7 +52,7 @@
     .selection-hint { margin:10px 0; padding:9px 12px; border-radius:9px; background:#f8fafc; border:1px solid var(--line); color:#475569; font-size:13px; }
     .event-meta-section { margin-bottom:18px; }
     .event-meta-grid { display:grid; grid-template-columns:repeat(2, minmax(220px, 1fr)); gap:14px; max-width:720px; }
-    .title-generator-grid { display:grid; grid-template-columns:repeat(4, minmax(170px, 1fr)); gap:14px; margin-top:16px; }
+    .title-generator-grid {display: grid; grid-template-columns: repeat(2, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
     .field-group { display:flex; flex-direction:column; gap:7px; min-width:0; }
     .field-group label { font-weight:700; }
     .field-group input,
@@ -384,9 +384,13 @@
 
       <div class="title-generator-grid">
         <div class="field-group">
-          <label for="eventCityInput">עיר</label>
-          <input id="eventCityInput" type="text" placeholder="הזן עיר" />
-        </div>
+        <label for="eventCityInput">מיקום ראשי</label>
+        <input
+          id="eventCityInput"
+          type="text"
+          placeholder="הזן מיקום ראשי"
+        />
+      </div>
 
        <div class="field-group event-type-field">
         <label>סוג האירוע</label>
@@ -421,14 +425,18 @@
         </select>
       </div>
 
-        <div class="field-group">
-          <label for="eventLocationInput">מיקום</label>
-          <input id="eventLocationInput" type="text" placeholder="הזן מיקום" />
-        </div>
+       <div class="field-group">
+        <label for="eventLocationInput">מיקום משני</label>
+        <input
+          id="eventLocationInput"
+          type="text"
+          placeholder="הזן מיקום משני"
+        />
+      </div>
 
         <div class="field-group">
           <label for="eventDateInput">תאריך</label>
-          <input id="eventDateInput" type="text" readonly />
+          <input id="eventDateInput" type="hidden" />
         </div>
       </div>
 

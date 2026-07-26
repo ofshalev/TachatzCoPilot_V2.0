@@ -3218,7 +3218,7 @@ function initializeLocationTypeButtons() {
   function renderSecondaryButtons(primaryType) {
     secondaryButtonsContainer.innerHTML = '';
     secondaryTypeInput.value = '';
-
+    
     const options =
       primaryType === 'כביש'
         ? ['צומת', 'מחלף']
@@ -3230,6 +3230,7 @@ function initializeLocationTypeButtons() {
       const button = document.createElement('button');
 
       button.type = 'button';
+      button.tabIndex = -1;
       button.className = 'location-type-button';
       button.textContent = value;
       button.dataset.secondaryLocationType = value;
@@ -3271,6 +3272,27 @@ function initializeLocationTypeButtons() {
               item.dataset.primaryLocationType === value
             );
           });
+
+
+    const defaultSecondaryType =
+      primaryType === 'עיר'
+        ? 'רחוב'
+        : primaryType === 'כביש'
+          ? 'צומת'
+          : '';
+    
+    if (defaultSecondaryType) {
+      secondaryTypeInput.value = defaultSecondaryType;
+    
+      const defaultButton =
+        secondaryButtonsContainer.querySelector(
+          `[data-secondary-location-type="${defaultSecondaryType}"]`
+        );
+    
+      if (defaultButton) {
+        defaultButton.classList.add('selected');
+      }
+    }
 
         renderSecondaryButtons(value);
 

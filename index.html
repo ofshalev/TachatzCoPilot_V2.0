@@ -280,32 +280,40 @@
 
 @media (max-width: 700px) {
   .location-input-row {
-    flex-wrap: wrap;
+    width: 100%;
   }
 
   .location-input-row input[type="text"] {
+    width: 100%;
     max-width: none;
-    flex-basis: 100%;
   }
 }
 
 .location-input-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 220px;
   direction: rtl;
 }
 
 .location-input-row .location-type-buttons {
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+  flex: none;
 }
 
 .location-input-row input[type="text"] {
-  width: 100%;
-  min-width: 200px;
-  max-width: 390px;
-  flex: 1 1 280px;
+  width: 220px;
+  height: 42px;
+  min-width: 0;
+  max-width: 220px;
+  min-height: 42px;
+  box-sizing: border-box;
+  flex: none;
 }
     
 .location-type-button:hover {

@@ -258,6 +258,36 @@
   }
 }
 
+.location-type-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.location-type-button {
+  min-width: 78px;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid #d7deea;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #182033;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.location-type-button:hover {
+  border-color: #8da8ff;
+  background: #f2f6ff;
+}
+
+.location-type-button.selected {
+  border-color: #4c78ff;
+  background: #edf3ff;
+  color: #315be8;
+  box-shadow: 0 0 0 1px rgba(76, 120, 255, 0.16);
+}
     
 .operator-field {
   grid-column: 1 / -1;
@@ -420,19 +450,63 @@
 
       <div class="field-group">
         <label for="eventCityInput">מיקום ראשי</label>
+      
+        <div
+          id="primaryLocationTypeButtons"
+          class="location-type-buttons"
+          role="radiogroup"
+          aria-label="סוג מיקום ראשי"
+        >
+          <button
+            type="button"
+            class="location-type-button"
+            data-primary-location-type="עיר"
+          >
+            עיר
+          </button>
+      
+          <button
+            type="button"
+            class="location-type-button"
+            data-primary-location-type="כביש"
+          >
+            כביש
+          </button>
+        </div>
+      
         <input
           id="eventCityInput"
           type="text"
           placeholder="הזן מיקום ראשי"
         />
+      
+        <input
+          id="primaryLocationType"
+          type="hidden"
+          value=""
+        />
       </div>
         
        <div class="field-group">
         <label for="eventLocationInput">מיקום משני</label>
+      
+        <div
+          id="secondaryLocationTypeButtons"
+          class="location-type-buttons"
+          role="radiogroup"
+          aria-label="סוג מיקום משני"
+        ></div>
+      
         <input
           id="eventLocationInput"
           type="text"
           placeholder="הזן מיקום משני"
+        />
+      
+        <input
+          id="secondaryLocationType"
+          type="hidden"
+          value=""
         />
       </div>
 
@@ -2001,11 +2075,27 @@ function formatCurrentEventDate() {
 }
 
 function updateRealtimeEventTitle() {
-  const city = cleanText(document.getElementById('eventCityInput').value);
+  const primaryLocation = cleanText(
+    document.getElementById('eventCityInput').value
+  );
+  
+  const primaryLocationType = cleanText(
+    document.getElementById('primaryLocationType').value
+  );
+  
+  const formattedPrimaryLocation =
+    primaryLocationType === 'כביש' && primaryLocation
+      ? `כביש ${primaryLocation}`
+      : primaryLocation;
   const eventType = cleanText(document.getElementById('eventTypeSelect').value);
   const location = cleanText(document.getElementById('eventLocationInput').value);
   const date = cleanText(document.getElementById('eventDateInput').value);
-  state.eventTitle = [city, eventType, location, date].filter(Boolean).join(', ');
+  state.eventTitle = [
+  formattedPrimaryLocation,
+  eventType,
+  location,
+  date
+  ]
   document.getElementById('eventTitleBox').style.display = 'block';
   document.getElementById('eventTitle').value = state.eventTitle;
 }
@@ -2047,13 +2137,21 @@ function formatHebrewList(values) {
 function updateEventDescription() {
   const operator = cleanText(document.getElementById('reportingOperatorSelect').value);
   const location = cleanText(document.getElementById('eventLocationInput').value);
+  const secondaryLocationType = cleanText(
+    document.getElementById('secondaryLocationType').value
+  );
+  
+  const formattedLocation =
+    secondaryLocationType && location
+      ? `${secondaryLocationType} ${location}`
+      : location;
   const eventType = cleanText(document.getElementById('eventTypeSelect').value);
   const verifications = getSelectedEventVerifications();
   const verification = formatHebrewList(verifications);
   const responseTypes = getSelectedEventResponseTypes();
 
   const operatorText = operator || '_____';
-  const locationText = location || '_____';
+  const locationText = formattedLocation || '_____';
   const eventTypeText = eventType || '_____';
   const verificationText = verification || '_____';
 
@@ -3094,6 +3192,100 @@ document.addEventListener('DOMContentLoaded', () => {
   enableTimeWheelControl();
 });
 
+
+function initializeLocationTypeButtons() {
+  const primaryTypeInput =
+    document.getElementById('primaryLocationType');
+
+  const secondaryTypeInput =
+    document.getElementById('secondaryLocationType');
+
+  const primaryButtonsContainer =
+    document.getElementById('primaryLocationTypeButtons');
+
+  const secondaryButtonsContainer =
+    document.getElementById('secondaryLocationTypeButtons');
+
+  if (
+    !primaryTypeInput ||
+    !secondaryTypeInput ||
+    !primaryButtonsContainer ||
+    !secondaryButtonsContainer
+  ) {
+    return;
+  }
+
+  function renderSecondaryButtons(primaryType) {
+    secondaryButtonsContainer.innerHTML = '';
+    secondaryTypeInput.value = '';
+
+    const options =
+      primaryType === 'כביש'
+        ? ['צומת', 'מחלף']
+        : primaryType === 'עיר'
+          ? ['רחוב', 'דרך']
+          : [];
+
+    options.forEach(value => {
+      const button = document.createElement('button');
+
+      button.type = 'button';
+      button.className = 'location-type-button';
+      button.textContent = value;
+      button.dataset.secondaryLocationType = value;
+
+      button.addEventListener('click', () => {
+        secondaryTypeInput.value = value;
+
+        secondaryButtonsContainer
+          .querySelectorAll('.location-type-button')
+          .forEach(item => {
+            item.classList.toggle(
+              'selected',
+              item.dataset.secondaryLocationType === value
+            );
+          });
+
+        updateRealtimeEventTitle();
+        updateEventDescription();
+      });
+
+      secondaryButtonsContainer.appendChild(button);
+    });
+  }
+
+  primaryButtonsContainer
+    .querySelectorAll('[data-primary-location-type]')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        const value =
+          button.dataset.primaryLocationType;
+
+        primaryTypeInput.value = value;
+
+        primaryButtonsContainer
+          .querySelectorAll('.location-type-button')
+          .forEach(item => {
+            item.classList.toggle(
+              'selected',
+              item.dataset.primaryLocationType === value
+            );
+          });
+
+        renderSecondaryButtons(value);
+
+        updateRealtimeEventTitle();
+        updateEventDescription();
+      });
+    });
+}
+
+document.addEventListener(
+  'DOMContentLoaded',
+  initializeLocationTypeButtons
+);
+
+  
 function initializeReportingOperatorButtons() {
   const select = document.getElementById('reportingOperatorSelect');
   const container = document.getElementById('reportingOperatorButtons');

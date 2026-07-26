@@ -3278,8 +3278,28 @@ function initializeLocationTypeButtons() {
         updateEventDescription();
       });
     });
+
+  primaryTypeInput.value = 'עיר';
+
+  const cityButton =
+    primaryButtonsContainer.querySelector(
+      '[data-primary-location-type="עיר"]'
+    );
+
+  if (cityButton) {
+    cityButton.classList.add('selected');
+  }
+
+  renderSecondaryButtons('עיר');
 }
 
+document.addEventListener(
+  'DOMContentLoaded',
+  initializeLocationTypeButtons
+);
+
+  
+  
 document.addEventListener(
   'DOMContentLoaded',
   initializeLocationTypeButtons

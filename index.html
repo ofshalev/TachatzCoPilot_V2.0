@@ -645,23 +645,26 @@
 }
 
 .custom-event-type-row {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
   gap: 8px;
+  width: 100%;
   margin-top: 8px;
-  direction: rtl;
+  align-items: center;
 }
 
 #customEventTypeButton {
-  width: 135px;
+  grid-column: 1;
+  width: 100%;
   min-height: 42px;
-  flex: 0 0 auto;
 }
 
 .custom-event-type-input {
-  flex: 1;
+  grid-column: 2 / 6;
+  width: 100%;
   min-height: 42px;
   box-sizing: border-box;
+  margin: 0;
   border: 1px solid #cbd5e1;
   border-radius: 9px;
   padding: 10px 12px;
@@ -3854,7 +3857,11 @@ function initializeCustomEventTypeButton() {
   if (!select || !button || !input || !container) return;
 
   button.addEventListener('click', () => {
-    select.value = 'אחר';
+    const isAlreadySelected =
+      select.value === 'אחר';
+
+    select.value =
+      isAlreadySelected ? '' : 'אחר';
 
     container
       .querySelectorAll('.event-type-choice-button')
@@ -3863,7 +3870,10 @@ function initializeCustomEventTypeButton() {
         item.setAttribute('aria-checked', 'false');
       });
 
-    button.classList.add('selected');
+    button.classList.toggle(
+      'selected',
+      !isAlreadySelected
+    );
 
     select.dispatchEvent(
       new Event('change', { bubbles: true })

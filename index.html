@@ -4079,6 +4079,15 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
   updateSelectionStatus();
 });
 
+  document
+  .getElementById('customEventTypeInput')
+  .addEventListener('input', () => {
+    updateRealtimeEventTitle();
+    updateEventDescription();
+    document.getElementById('appsMessageOutput').value = '';
+    updateSelectionStatus();
+  });
+
 document.getElementById('eventCityInput').addEventListener('input', updateRealtimeEventTitle);
 
 document.getElementById('eventLocationInput').addEventListener('input', () => {

@@ -267,6 +267,14 @@
   width: 100%;
 }
 
+.operator-choice-button img {
+  width: 100%;
+  max-width: 100px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+    
 .operator-choice-button {
   min-height: 52px;
   padding: 10px 16px;
@@ -277,6 +285,20 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+.operator-choice-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.operator-choice-button img {
+  width: 100%;
+  max-width: 105px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
 }
 
 .operator-choice-button:hover {
@@ -342,12 +364,12 @@
           <div id="reportingOperatorButtons" class="operator-buttons"></div>
           <select id="reportingOperatorSelect" hidden>
             <option value="">בחר מפעיל...</option>
-            <option value="דן">דן</option>
             <option value="אגד">אגד</option>
-            <option value="קווים">קווים</option>
+            <option value="אפיקים">אפיקים</option>
+            <option value="דן">דן</option>
             <option value="מטרופולין">מטרופולין</option>
             <option value="סופרבוס">סופרבוס</option>
-            <option value="אפיקים">אפיקים</option>
+            <option value="קווים">קווים</option>
           </select>
     </div>
 
@@ -375,18 +397,18 @@
       
         <select id="eventTypeSelect" hidden>
           <option value="">בחר סוג אירוע...</option>
-          <option value="תאונה">תאונה</option>
-          <option value="חסימה משטרתית">חסימה משטרתית</option>
           <option value="אירוע ספורט">אירוע ספורט</option>
           <option value="אירוע תרבות">אירוע תרבות</option>
           <option value="הלוויה">הלוויה</option>
           <option value="הפגנה">הפגנה</option>
-          <option value="תקלת רמזורים">תקלת רמזורים</option>
+          <option value="חסימה משטרתית">חסימה משטרתית</option>
           <option value="חתונה">חתונה</option>
           <option value="טקס">טקס</option>
           <option value="מפגע בטיחותי">מפגע בטיחותי</option>
           <option value="עבודות">עבודות</option>
           <option value="רכב תקוע">רכב תקוע</option>
+          <option value="תאונה">תאונה</option>
+          <option value="תקלת רמזורים">תקלת רמזורים</option>
         </select>
       </div>
 
@@ -3057,6 +3079,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeReportingOperatorButtons() {
   const select = document.getElementById('reportingOperatorSelect');
   const container = document.getElementById('reportingOperatorButtons');
+  const operatorLogos = {
+  'דן': 'logos/dan.png',
+  'אגד': 'logos/egged.png',
+  'קווים': 'logos/kavim.png',
+  'מטרופולין': 'logos/metropoline.png',
+  'סופרבוס': 'logos/superbus.png',
+  'אפיקים': 'logos/afikim.png'
+  };
 
   if (!select || !container) return;
 
@@ -3068,7 +3098,20 @@ function initializeReportingOperatorButtons() {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'operator-choice-button';
-    button.textContent = option.textContent.trim();
+    const operatorName = option.textContent.trim();
+    const logoPath = operatorLogos[option.value];
+    
+    button.title = operatorName;
+    button.setAttribute('aria-label', operatorName);
+    
+    if (logoPath) {
+      const img = document.createElement('img');
+      img.src = logoPath;
+      img.alt = operatorName;
+      button.appendChild(img);
+    } else {
+      button.textContent = operatorName;
+    }
     button.dataset.value = option.value;
 
     if (option.value === select.value) {

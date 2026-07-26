@@ -236,10 +236,9 @@
     
 .event-type-buttons {
   display: grid;
-  grid-template-columns: repeat(5, 135px);
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
   gap: 8px;
-  width: fit-content;
-  max-width: 100%;
+  width: 100%;
 }
 
 .event-type-choice-button {
@@ -643,6 +642,34 @@
   direction: rtl;
   text-align: right;
 }
+
+.custom-event-type-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  direction: rtl;
+}
+
+#customEventTypeButton {
+  width: 135px;
+  min-height: 42px;
+  flex: 0 0 auto;
+}
+
+.custom-event-type-input {
+  flex: 1;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 15px;
+  direction: rtl;
+  text-align: right;
+}
     
   </style>
 </head>
@@ -695,6 +722,24 @@
         role="radiogroup"
         aria-label="סוג האירוע"
       ></div>
+
+      <div class="custom-event-type-row">
+        <button
+          id="customEventTypeButton"
+          type="button"
+          class="event-type-choice-button"
+        >
+          אחר
+        </button>
+      
+        <input
+          id="customEventTypeInput"
+          class="custom-event-type-input"
+          type="text"
+          placeholder="תאר את סוג האירוע"
+          hidden
+        />
+      </div>
 
       <select id="eventTypeSelect" hidden>
         <option value="">בחר סוג אירוע...</option>
@@ -3494,12 +3539,22 @@ function updateCustomEventTypeVisibility() {
   const input =
     document.getElementById('customEventTypeInput');
 
+  const customButton =
+    document.getElementById('customEventTypeButton');
+
   if (!select || !input) return;
 
   const showCustomInput =
     select.value === 'אחר';
 
   input.hidden = !showCustomInput;
+
+  if (customButton) {
+    customButton.classList.toggle(
+      'selected',
+      showCustomInput
+    );
+  }
 
   if (showCustomInput) {
     input.focus();
@@ -3781,6 +3836,44 @@ document.addEventListener(
   'DOMContentLoaded',
   initializeReportingOperatorButtons
 );
+
+function initializeCustomEventTypeButton() {
+  const select =
+    document.getElementById('eventTypeSelect');
+
+  const button =
+    document.getElementById('customEventTypeButton');
+
+  const input =
+    document.getElementById('customEventTypeInput');
+
+  const container =
+    document.getElementById('eventTypeButtons');
+
+  if (!select || !button || !input || !container) return;
+
+  button.addEventListener('click', () => {
+    select.value = 'אחר';
+
+    container
+      .querySelectorAll('.event-type-choice-button')
+      .forEach(item => {
+        item.classList.remove('selected');
+        item.setAttribute('aria-checked', 'false');
+      });
+
+    button.classList.add('selected');
+
+    select.dispatchEvent(
+      new Event('change', { bubbles: true })
+    );
+  });
+}
+
+document.addEventListener(
+  'DOMContentLoaded',
+  initializeCustomEventTypeButton
+);
   
 function initializeEventTypeButtons() {
   const select = document.getElementById('eventTypeSelect');
@@ -3791,7 +3884,7 @@ function initializeEventTypeButtons() {
   container.innerHTML = '';
 
   [...select.options].forEach(option => {
-    if (!option.value) return;
+  if (!option.value || option.value === 'אחר') return;
 
     const button = document.createElement('button');
 

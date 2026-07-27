@@ -732,6 +732,22 @@
   background: #f9fafb;
 }
 .signage-stop-title { margin: 0 0 12px; font-size: 16px; }
+.signage-grouped-stops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+.signage-grouped-stop-item {
+  display: inline-block;
+  padding: 6px 9px;
+  border: 1px solid #d7deea;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
 .signage-message-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(260px, 1fr));
@@ -3318,6 +3334,8 @@ function renderSignageMessages() {
     return;
   }
 
+  const groups = new Map();
+
   selectedResults.forEach(result => {
     const selectedRoutes = [...getSelectedRoutes(result.stop_code)];
     const rows = buildSignageRows(
@@ -3325,35 +3343,81 @@ function renderSignageMessages() {
       selectedRoutes,
       isWholeStopSelected(result)
     );
-    const validation = validateSignageRows(rows);
 
+    const key = rows.join('\n');
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        rows,
+        validation: validateSignageRows(rows),
+        stops: []
+      });
+    }
+
+    groups.get(key).stops.push(result);
+  });
+
+  [...groups.values()].forEach(group => {
     const card = document.createElement('div');
     card.className = 'signage-stop-card';
 
     const title = document.createElement('h4');
     title.className = 'signage-stop-title';
-    title.textContent = result.stop_name
-      ? `${result.stop_code} – ${result.stop_name}`
-      : result.stop_code;
+
+    if (group.stops.length === 1) {
+      const result = group.stops[0];
+      title.textContent = result.stop_name
+        ? `${result.stop_code} – ${result.stop_name}`
+        : result.stop_code;
+    } else {
+      title.textContent = `הודעה משותפת ל-${group.stops.length} תחנות`;
+    }
+
+    card.appendChild(title);
+
+    if (group.stops.length > 1) {
+      const stopList = document.createElement('div');
+      stopList.className = 'signage-grouped-stops';
+
+      group.stops.forEach(result => {
+        const item = document.createElement('span');
+        item.className = 'signage-grouped-stop-item';
+        item.textContent = result.stop_name
+          ? `${result.stop_code} – ${result.stop_name}`
+          : result.stop_code;
+        stopList.appendChild(item);
+      });
+
+      card.appendChild(stopList);
+    }
 
     const grid = document.createElement('div');
     grid.className = 'signage-message-grid';
     grid.appendChild(
-      createSignageVersion('הודעה מוכנה', rows, 'right', validation)
+      createSignageVersion(
+        'הודעה מוכנה',
+        group.rows,
+        'right',
+        group.validation
+      )
     );
     grid.appendChild(
-      createSignageVersion('הודעה מיושרת לשמאל', rows, 'left', validation)
+      createSignageVersion(
+        'הודעה מיושרת לשמאל',
+        group.rows,
+        'left',
+        group.validation
+      )
     );
 
     const validationMessage = document.createElement('div');
     validationMessage.className =
-      `signage-validation ${validation.valid ? 'valid' : 'invalid'}`;
+      `signage-validation ${group.validation.valid ? 'valid' : 'invalid'}`;
 
-    validationMessage.textContent = validation.valid
+    validationMessage.textContent = group.validation.valid
       ? 'ההודעה תקינה: 4 שורות, עד 22 תווים בכל שורה.'
-      : `לא ניתן להעתיק: שורה ${validation.invalidIndexes.map(i => i + 1).join(', ')} חורגת מ-22 תווים.`;
+      : `לא ניתן להעתיק: שורה ${group.validation.invalidIndexes.map(i => i + 1).join(', ')} חורגת מ-22 תווים.`;
 
-    card.appendChild(title);
     card.appendChild(grid);
     card.appendChild(validationMessage);
     container.appendChild(card);

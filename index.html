@@ -1147,7 +1147,6 @@
     </div>
 
     <div class="create-area">
-      <button id="createDeveloperMessageBtn" type="button" disabled>צור</button>
       <span id="selectionStatus" class="hint" style="margin:0">טרם נבחרו ביטולים.</span>
     </div>
   </section>
@@ -3050,8 +3049,8 @@ function refreshRealtimeSelections() {
   updateSelectionStatus();
   updateEventDescription();
   renderSignageMessages();
+  updateRealtimeDeveloperMessage();
   updateDeveloperTransferButton();
-  document.getElementById('appsMessageOutput').value = '';
 }
 
 function toggleWholeStop(stopCode) {
@@ -3080,10 +3079,7 @@ function updateSelectionStatus() {
   const fullStops = selectedResults.filter(isWholeStopSelected).length;
   const partialStops = selectedResults.length - fullStops;
   const eventType = getEffectiveEventType();
-  const createButton = document.getElementById('createDeveloperMessageBtn');
   const status = document.getElementById('selectionStatus');
-
-  createButton.disabled = fullStops === 0 || !eventType;
 
   if (!selectedResults.length) {
     status.textContent = eventType
@@ -3873,7 +3869,7 @@ const signage = buildSignage(signageRows);
   renderImpactTable(results);
   updateSelectionStatus();
   updateEventDescription();
-  document.getElementById('appsMessageOutput').value = '';
+  updateRealtimeDeveloperMessage();
 
 renderEventTimeRanges();
 renderSignageMessages();
@@ -3882,20 +3878,13 @@ updateDeveloperTransferButton();
   document.getElementById('impactStatus').textContent = `הסתיים. נותחו ${results.length} תחנות מול ${matrix.size} תחנות GTFS.`;
 }
 
-function createRealtimeDeveloperOutputs() {
+function updateRealtimeDeveloperMessage() {
   const output = document.getElementById('appsMessageOutput');
   const eventType = getEffectiveEventType();
   const fullyCancelledStops = lastImpactResults.filter(isWholeStopSelected);
 
-  if (!eventType) {
+  if (!eventType || !fullyCancelledStops.length) {
     output.value = '';
-    document.getElementById('impactStatus').textContent = 'יש לבחור סוג אירוע לפני יצירת הודעת המפתחים.';
-    return;
-  }
-
-  if (!fullyCancelledStops.length) {
-    output.value = '';
-    document.getElementById('impactStatus').textContent = 'הודעת המפתחים נוצרת רק עבור תחנות שבוטלו לכל הקווים.';
     return;
   }
 
@@ -3904,11 +3893,12 @@ function createRealtimeDeveloperOutputs() {
     : `עקב ${eventType} התחנות הבאות מבוטלות זמנית:`;
 
   output.value = header + '\n' + fullyCancelledStops
-    .map(result => `${result.stop_code} - ${result.stop_name}`)
+    .map(result =>
+      result.stop_name
+        ? `${result.stop_code} - ${result.stop_name}`
+        : result.stop_code
+    )
     .join('\n');
-
-  document.getElementById('impactStatus').textContent =
-    `הודעת המפתחים נוצרה עבור ${fullyCancelledStops.length} תחנות בביטול מלא.`;
 }
 
 function exportImpactCsv() {
@@ -4625,7 +4615,6 @@ document.getElementById('impactBtn').addEventListener('click', async () => {
   lastImpactResults = [];
   document.getElementById('appsMessageOutput').value = '';
   document.getElementById('selectionStatus').textContent = 'טרם נבחרו ביטולים.';
-  document.getElementById('createDeveloperMessageBtn').disabled = true;
 
   if (!state.raw) {
     state.warnings.push('לא הוזנה הודעת מפעיל.');
@@ -4680,7 +4669,6 @@ document.getElementById('sendDeveloperStopsBtn').addEventListener('click', () =>
   });
 });
 
-document.getElementById('createDeveloperMessageBtn').addEventListener('click', createRealtimeDeveloperOutputs);
 
 
 document
@@ -4761,7 +4749,7 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
   updateEventDescription();
   renderEventTimeRanges({ resetEndTime: true });
   renderSignageMessages();
-  document.getElementById('appsMessageOutput').value = '';
+  updateRealtimeDeveloperMessage();
   updateSelectionStatus();
 });
 
@@ -4772,7 +4760,7 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
     updateEventDescription();
     renderEventTimeRanges({ resetEndTime: true });
     renderSignageMessages();
-    document.getElementById('appsMessageOutput').value = '';
+    updateRealtimeDeveloperMessage();
     updateSelectionStatus();
   });
 
@@ -4831,6 +4819,7 @@ updateEventDescription();
 render();
 renderEventTimeRanges({ resetEndTime: true });
 renderSignageMessages();
+updateRealtimeDeveloperMessage();
 updateDeveloperTransferButton();
 </script>
 </body>

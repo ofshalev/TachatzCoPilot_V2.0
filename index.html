@@ -888,6 +888,7 @@
           id="customEventTypeInput"
           class="custom-event-type-input"
           type="text"
+          maxlength="18"
           placeholder="תאר את סוג האירוע"
           hidden
         />
@@ -4862,11 +4863,12 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
 
   document
   .getElementById('customEventTypeInput')
-  .addEventListener('input', () => {
-    const input = document.getElementById('customEventTypeInput');
-    const counter = document.getElementById('customEventTypeCounter');
+  .addEventListener('input', event => {
+    const input = event.target;
 
-    counter.textContent = `${input.value.length}/18 תווים`;
+    if (input.value.length > 18) {
+      input.value = input.value.slice(0, 18);
+    }
 
     updateRealtimeEventTitle();
     updateEventDescription();

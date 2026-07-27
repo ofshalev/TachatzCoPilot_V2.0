@@ -4800,7 +4800,15 @@ document
     }, 1200);
   });
 
-
+document.addEventListener('DOMContentLoaded', () => {
+  document
+    .getElementById('primaryLocationType')
+    .addEventListener('change', () => {
+      updateRealtimeEventTitle();
+      updateEventDescription();
+    });
+});
+  
 document.getElementById('eventTypeSelect').addEventListener('change', () => {
   updateCustomEventTypeVisibility();
   updateRealtimeEventTitle();
@@ -4822,7 +4830,10 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
     updateSelectionStatus();
   });
 
-document.getElementById('eventCityInput').addEventListener('input', updateRealtimeEventTitle);
+document.getElementById('eventCityInput').addEventListener('input', () => {
+  updateRealtimeEventTitle();
+  updateEventDescription();
+});
 
 document.getElementById('reportTimeInput').addEventListener('input', () => {
   renderEventTimeRanges({ resetEndTime: true });

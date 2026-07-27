@@ -800,6 +800,25 @@
 .signage-validation { margin-top: 10px; font-size: 13px; }
 .signage-validation.valid { color: var(--ok); }
 .signage-validation.invalid { color: var(--bad); font-weight: 700; }
+.firebase-send-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+.firebase-send-button {
+  background: #0f766e;
+}
+.firebase-send-button:hover {
+  background: #115e59;
+}
+.firebase-transfer-status {
+  margin-top: 8px;
+  min-height: 20px;
+  font-size: 13px;
+}
+.firebase-transfer-status.success { color: var(--ok); }
+.firebase-transfer-status.error { color: var(--bad); font-weight: 700; }
+.firebase-transfer-status.working { color: var(--warn); }
 @media (max-width: 760px) {
   .signage-message-grid { grid-template-columns: 1fr; }
 }
@@ -1150,7 +1169,7 @@
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <h3 style="margin:0;">הודעה למפתחים</h3>
-        <button id="copyAppsMessageBtn" type="button">העתק</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button id="sendDeveloperStopsBtn" type="button" class="secondary" disabled>שלח למחשב המרוחק</button><button id="copyAppsMessageBtn" type="button">העתק</button></div>
       </div>
 
       <textarea
@@ -1167,6 +1186,8 @@
           line-height:1.6;
         "
       ></textarea>
+
+      <div id="developerTransferStatus" class="hint" style="margin-top:8px;"></div>
 
       <div id="signageSection" class="signage-section">
         <h3 style="margin:0;">הודעות לשילוט</h3>
@@ -3029,6 +3050,7 @@ function refreshRealtimeSelections() {
   updateSelectionStatus();
   updateEventDescription();
   renderSignageMessages();
+  updateDeveloperTransferButton();
   document.getElementById('appsMessageOutput').value = '';
 }
 
@@ -3198,6 +3220,111 @@ async function copyTextWithFeedback(text, button) {
   }, 1200);
 }
 
+
+
+const FIREBASE_DATABASE_URL =
+  'https://tachatz-copilot-default-rtdb.europe-west1.firebasedatabase.app/';
+const FIREBASE_RECORD_PATH = 'tachatz-transfer/latest';
+
+function firebaseTransferEndpoint() {
+  return FIREBASE_DATABASE_URL.replace(/\/+$/, '') +
+    '/' + FIREBASE_RECORD_PATH + '.json';
+}
+
+function setFirebaseTransferStatus(element, message, type = '') {
+  if (!element) return;
+  element.textContent = message || '';
+  element.className =
+    'firebase-transfer-status' + (type ? ` ${type}` : '');
+}
+
+async function sendStopCodesToRemote({
+  stopCodes,
+  sourceType,
+  messageTitle,
+  statusElement,
+  button
+}) {
+  const codes = [...new Set(
+    (stopCodes || [])
+      .map(code => String(code || '').trim())
+      .filter(Boolean)
+  )];
+
+  if (!codes.length) {
+    setFirebaseTransferStatus(
+      statusElement,
+      'לא נמצאו קודי תחנות לשליחה.',
+      'error'
+    );
+    return false;
+  }
+
+  const eventTitle =
+    cleanText(document.getElementById('eventTitle').value) ||
+    state.eventTitle ||
+    'ללא כותרת';
+
+  const record = {
+    title: messageTitle || `${sourceType} – ${eventTitle}`,
+    event_title: eventTitle,
+    source_type: sourceType,
+    stop_codes: codes,
+    created_at: new Date().toISOString()
+  };
+
+  const originalText = button ? button.textContent : '';
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'שולח...';
+  }
+
+  setFirebaseTransferStatus(
+    statusElement,
+    'שולח את קודי התחנות למחשב המרוחק...',
+    'working'
+  );
+
+  try {
+    const response = await fetch(firebaseTransferEndpoint(), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    setFirebaseTransferStatus(
+      statusElement,
+      `נשלחו ${codes.length} קודי תחנות בהצלחה.`,
+      'success'
+    );
+
+    return true;
+  } catch (error) {
+    setFirebaseTransferStatus(
+      statusElement,
+      `השליחה נכשלה: ${error.message}`,
+      'error'
+    );
+    return false;
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+}
+
+function updateDeveloperTransferButton() {
+  const button = document.getElementById('sendDeveloperStopsBtn');
+  if (!button) return;
+  const fullStops = lastImpactResults.filter(isWholeStopSelected);
+  button.disabled = fullStops.length === 0;
+}
 
 function buildSignageRows(eventType, selectedRoutes, isFullCancellation) {
   const reasonLine = `עקב ${cleanText(eventType || '')}`.trim();
@@ -3418,8 +3545,38 @@ function renderSignageMessages() {
       ? 'ההודעה תקינה: 4 שורות, עד 22 תווים בכל שורה.'
       : `לא ניתן להעתיק: שורה ${group.validation.invalidIndexes.map(i => i + 1).join(', ')} חורגת מ-22 תווים.`;
 
+    const sendRow = document.createElement('div');
+    sendRow.className = 'firebase-send-row';
+
+    const sendButton = document.createElement('button');
+    sendButton.type = 'button';
+    sendButton.className = 'firebase-send-button';
+    sendButton.textContent = 'שלח תחנות למחשב המרוחק';
+
+    const transferStatus = document.createElement('div');
+    transferStatus.className = 'firebase-transfer-status';
+
+    sendButton.addEventListener('click', () => {
+      const stopCodes = group.stops.map(result => result.stop_code);
+      const groupTitle = group.stops.length === 1
+        ? `שילוט – ${group.stops[0].stop_code}`
+        : `שילוט – הודעה משותפת ל-${group.stops.length} תחנות`;
+
+      sendStopCodesToRemote({
+        stopCodes,
+        sourceType: 'שילוט',
+        messageTitle: `${groupTitle} – ${state.eventTitle || 'ללא כותרת'}`,
+        statusElement: transferStatus,
+        button: sendButton
+      });
+    });
+
+    sendRow.appendChild(sendButton);
+
     card.appendChild(grid);
     card.appendChild(validationMessage);
+    card.appendChild(sendRow);
+    card.appendChild(transferStatus);
     container.appendChild(card);
   });
 }
@@ -3718,6 +3875,7 @@ const signage = buildSignage(signageRows);
 
 renderEventTimeRanges();
 renderSignageMessages();
+updateDeveloperTransferButton();
 
   document.getElementById('impactStatus').textContent = `הסתיים. נותחו ${results.length} תחנות מול ${matrix.size} תחנות GTFS.`;
 }
@@ -4511,6 +4669,20 @@ document.getElementById('impactBtn').addEventListener('click', async () => {
 });
 
 
+document.getElementById('sendDeveloperStopsBtn').addEventListener('click', () => {
+  const button = document.getElementById('sendDeveloperStopsBtn');
+  const status = document.getElementById('developerTransferStatus');
+  const fullStops = lastImpactResults.filter(isWholeStopSelected);
+
+  sendStopCodesToRemote({
+    stopCodes: fullStops.map(result => result.stop_code),
+    sourceType: 'מפתחים',
+    messageTitle: `מפתחים – ${state.eventTitle || 'ללא כותרת'}`,
+    statusElement: status,
+    button
+  });
+});
+
 document.getElementById('createDeveloperMessageBtn').addEventListener('click', createRealtimeDeveloperOutputs);
 
 
@@ -4662,6 +4834,7 @@ updateEventDescription();
 render();
 renderEventTimeRanges({ resetEndTime: true });
 renderSignageMessages();
+updateDeveloperTransferButton();
 </script>
 </body>
 </html>

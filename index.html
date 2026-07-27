@@ -4278,12 +4278,20 @@ function updateCustomEventTypeVisibility() {
   const customButton =
     document.getElementById('customEventTypeButton');
 
+  const counter =
+  document.getElementById('customEventTypeCounter');
+
   if (!select || !input) return;
 
   const showCustomInput =
     select.value === 'אחר';
 
   input.hidden = !showCustomInput;
+
+  if (counter) {
+  counter.hidden = !showCustomInput;
+  counter.textContent = `${input.value.length}/18 תווים`;
+  }
 
   if (customButton) {
     customButton.classList.toggle(
@@ -4855,6 +4863,11 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
   document
   .getElementById('customEventTypeInput')
   .addEventListener('input', () => {
+    const input = document.getElementById('customEventTypeInput');
+    const counter = document.getElementById('customEventTypeCounter');
+
+    counter.textContent = `${input.value.length}/18 תווים`;
+
     updateRealtimeEventTitle();
     updateEventDescription();
     renderEventTimeRanges({ resetEndTime: true });

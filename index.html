@@ -2638,6 +2638,15 @@ function updateRealtimeEventTitle() {
     document.getElementById('eventCityInput').value
   );
 
+  const primaryLocationType = cleanText(
+  document.getElementById('primaryLocationType').value
+);
+
+  const formattedPrimaryLocation =
+    primaryLocationType === 'כביש' && primaryLocation
+      ? `כביש ${primaryLocation}`
+      : primaryLocation;
+
   const eventType = getEffectiveEventType();
 
   const location = cleanText(
@@ -2666,7 +2675,7 @@ function updateRealtimeEventTitle() {
   );
 
   state.eventTitle = [
-    primaryLocation,
+    formattedPrimaryLocation,
     eventType,
     formattedLocation,
     date

@@ -2642,10 +2642,13 @@ function updateRealtimeEventTitle() {
     document.getElementById('primaryLocationType').value
   );
   
+  const locationTypesToInclude = ['כביש', 'דרך', 'צומת', 'מחלף'];
+
   const formattedPrimaryLocation =
-    primaryLocationType === 'כביש' && primaryLocation
-      ? `כביש ${primaryLocation}`
-      : primaryLocation;
+  primaryLocation &&
+  locationTypesToInclude.includes(primaryLocationType)
+    ? `${primaryLocationType} ${primaryLocation}`
+    : primaryLocation;
   const eventType = getEffectiveEventType();
   const location = cleanText(document.getElementById('eventLocationInput').value);
   const date = cleanText(document.getElementById('eventDateInput').value);

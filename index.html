@@ -445,6 +445,50 @@
   -webkit-appearance: none;
 }
 
+.event-range-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  direction: ltr;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f3f4f6;
+  font-family: Consolas, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.event-range-value.editable {
+  cursor: text;
+}
+
+.event-range-value.editable:focus-within {
+  background: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
+}
+
+.end-time-text-input {
+  width: 50px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.end-time-text-input::selection {
+  background: rgba(37, 99, 235, .22);
+}
+
 .time-wheel-control {
   width: 220px;
   align-items: stretch;
@@ -3112,15 +3156,8 @@ function renderEventTimeRanges(options = {}) {
     label.style.color = 'var(--muted)';
 
     const value = document.createElement('span');
+    value.className = 'event-range-value';
     value.textContent = formatCopyDateTime(startDate);
-    value.style.direction = 'ltr';
-    value.style.fontFamily = 'Consolas, monospace';
-    value.style.fontSize = '15px';
-    value.style.fontWeight = '700';
-    value.style.padding = '8px 10px';
-    value.style.border = '1px solid var(--line)';
-    value.style.borderRadius = '8px';
-    value.style.background = '#f3f4f6';
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -3151,54 +3188,125 @@ function renderEventTimeRanges(options = {}) {
     label.style.fontWeight = '400';
     label.style.color = 'var(--muted)';
 
-    const input = document.createElement('input');
-    input.type = 'datetime-local';
-    input.value = state.realtimeEndDateTime;
-    input.min = formatDateTimeLocalValue(startDate);
-    input.step = '60';
-    input.setAttribute('aria-label', 'מועד סיום האירוע');
-    input.style.direction = 'ltr';
-    input.style.fontFamily = 'Consolas, monospace';
-    input.style.fontSize = '15px';
-    input.style.fontWeight = '700';
-    input.style.padding = '7px 9px';
-    input.style.border = '1px solid var(--line)';
-    input.style.borderRadius = '8px';
-    input.style.background = '#fff';
+    const valueBox = document.createElement('div');
+    valueBox.className = 'event-range-value editable';
+    valueBox.title = 'לחץ כדי לערוך את שעת הסיום';
 
-    input.addEventListener('change', () => {
-      const selectedEnd =
-        parseDateTimeLocalValue(input.value);
+    const dateValue = document.createElement('span');
 
-      if (!selectedEnd) {
-        renderEventTimeRanges({
-          resetEndTime: true
-        });
+    const timeInput = document.createElement('input');
+    timeInput.type = 'text';
+    timeInput.inputMode = 'numeric';
+    timeInput.className = 'end-time-text-input';
+    timeInput.maxLength = 5;
+    timeInput.setAttribute('aria-label', 'שעת סיום האירוע');
+    timeInput.placeholder = '1032';
+    timeInput.title = 'אפשר להקליד 1032 או 10:32';
+
+    function getSelectedEnd() {
+      return (
+        parseDateTimeLocalValue(state.realtimeEndDateTime) ||
+        new Date(endDate)
+      );
+    }
+
+    function applySelectedEnd(selectedEnd) {
+      if (selectedEnd < startDate) {
+        selectedEnd = new Date(startDate);
+      }
+
+      state.realtimeEndDateTime =
+        formatDateTimeLocalValue(selectedEnd);
+      state.realtimeEndManuallyEdited = true;
+
+      dateValue.textContent = formatCopyDate(selectedEnd);
+      timeInput.value =
+        `${String(selectedEnd.getHours()).padStart(2, '0')}:` +
+        `${String(selectedEnd.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function saveTypedTime() {
+      const typedValue = String(timeInput.value || '')
+        .trim()
+        .replace(/\s+/g, '');
+
+      let hours;
+      let minutes;
+
+      const colonMatch = typedValue.match(/^(\d{1,2}):(\d{2})$/);
+      const digitsOnlyMatch = typedValue.match(/^(\d{3,4})$/);
+
+      if (colonMatch) {
+        hours = Number(colonMatch[1]);
+        minutes = Number(colonMatch[2]);
+      } else if (digitsOnlyMatch) {
+        const digits = digitsOnlyMatch[1].padStart(4, '0');
+        hours = Number(digits.slice(0, 2));
+        minutes = Number(digits.slice(2));
+      } else {
+        applySelectedEnd(getSelectedEnd());
         return;
       }
 
-      state.realtimeEndDateTime = input.value;
-      state.realtimeEndManuallyEdited = true;
+      if (hours > 23 || minutes > 59) {
+        applySelectedEnd(getSelectedEnd());
+        return;
+      }
+
+      const selectedEnd = getSelectedEnd();
+      selectedEnd.setHours(hours, minutes, 0, 0);
+
+      if (selectedEnd < startDate) {
+        selectedEnd.setDate(selectedEnd.getDate() + 1);
+      }
+
+      applySelectedEnd(selectedEnd);
+    }
+
+    applySelectedEnd(getSelectedEnd());
+
+    valueBox.addEventListener('click', () => {
+      timeInput.focus();
+      timeInput.select();
     });
+
+    timeInput.addEventListener('click', event => {
+      event.stopPropagation();
+      timeInput.select();
+    });
+
+    timeInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        saveTypedTime();
+        timeInput.blur();
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        applySelectedEnd(getSelectedEnd());
+        timeInput.blur();
+      }
+    });
+
+    timeInput.addEventListener('blur', saveTypedTime);
 
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = 'העתק';
 
     button.addEventListener('click', () => {
-      const selectedEnd =
-        parseDateTimeLocalValue(input.value);
-
-      if (!selectedEnd) return;
-
       copyTextWithFeedback(
-        formatCopyDateTime(selectedEnd),
+        formatCopyDateTime(getSelectedEnd()),
         button
       );
     });
 
+    valueBox.appendChild(dateValue);
+    valueBox.appendChild(timeInput);
+
     group.appendChild(label);
-    group.appendChild(input);
+    group.appendChild(valueBox);
     group.appendChild(button);
 
     return group;

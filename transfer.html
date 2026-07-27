@@ -190,46 +190,12 @@
 </head>
 <body>
 <header>
-  <h1>TachatzCoPilot – העברת קודי תחנות</h1>
-  <p>שמירה זמנית של רשימת התחנות והורדת קובץ TXT במחשב המרוחק</p>
+  <h1>TachatzCoPilot – הרשימה האחרונה</h1>
+  <p>קבלת קודי התחנות שנשלחו מהמחשב הראשי</p>
 </header>
 
 <main>
-  <section id="setupCard" class="card setup" hidden>
-    <h2>נדרשת הגדרה חד-פעמית</h2>
-    <p>
-      יש להחליף בקובץ את הערך
-      <code>PASTE_FIREBASE_DATABASE_URL_HERE</code>
-      בכתובת Firebase Realtime Database שלך.
-    </p>
-    <p class="small">
-      דוגמה: <code>https://your-project-default-rtdb.europe-west1.firebasedatabase.app</code>
-    </p>
-  </section>
-
-  <section class="card">
-    <h2>שליחה מהמחשב הראשי</h2>
-
-    <div class="field">
-      <label for="eventTitle">כותרת האירוע — אופציונלי</label>
-      <input id="eventTitle" type="text" placeholder="לדוגמה: לוד, חסימות, כצנלסון והרצל" />
-    </div>
-
-    <div class="field">
-      <label for="codesInput">קודי תחנות</label>
-      <textarea id="codesInput" placeholder="35102&#10;35103&#10;30958"></textarea>
-      <div class="small">אפשר להדביק קודים בשורות, עם פסיקים או עם רווחים. רק מספרים בני 4–8 ספרות יישמרו.</div>
-    </div>
-
-    <div class="row">
-      <button id="sendBtn" type="button">העלה את הרשימה האחרונה</button>
-      <button id="clearInputBtn" type="button" class="secondary">נקה</button>
-    </div>
-
-    <div id="sendStatus" class="status"></div>
-  </section>
-
-  <section class="card">
+<section class="card">
     <h2>הרשימה האחרונה</h2>
 
     <div class="latest-meta">
@@ -306,64 +272,8 @@
     }).format(date);
   }
 
-  async function saveLatest() {
-    const sendButton = el('sendBtn');
-    const title = el('eventTitle').value.trim();
-    const codes = normalizeCodes(el('codesInput').value);
-
-    if (!databaseConfigured()) {
-      setStatus(el('sendStatus'), 'Firebase עדיין לא הוגדר בקובץ.', 'error');
-      return;
-    }
-
-    if (!codes.length) {
-      setStatus(el('sendStatus'), 'לא נמצאו קודי תחנות תקינים.', 'warning');
-      return;
-    }
-
-    const record = {
-      title: title || 'ללא כותרת',
-      stop_codes: codes,
-      created_at: new Date().toISOString()
-    };
-
-    sendButton.disabled = true;
-    sendButton.textContent = 'מעלה...';
-    setStatus(el('sendStatus'), '', '');
-
-    try {
-      const response = await fetch(endpoint(), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(record)
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      setStatus(
-        el('sendStatus'),
-        `הרשימה הועלתה בהצלחה: ${codes.length} קודי תחנות.`,
-        'success'
-      );
-
-      await loadLatest(false);
-    } catch (error) {
-      setStatus(
-        el('sendStatus'),
-        `ההעלאה נכשלה: ${error.message}. בדוק את כתובת Firebase ואת כללי הגישה.`,
-        'error'
-      );
-    } finally {
-      sendButton.disabled = false;
-      sendButton.textContent = 'העלה את הרשימה האחרונה';
-    }
-  }
-
   async function loadLatest(showLoading = true) {
     if (!databaseConfigured()) {
-      el('setupCard').hidden = false;
       setStatus(el('readStatus'), 'Firebase עדיין לא הוגדר בקובץ.', 'warning');
       return;
     }
@@ -445,7 +355,10 @@
     const link = document.createElement('a');
 
     link.href = url;
-    link.download = 'קודי_תחנות_מפתחים.txt';
+    link.download =
+      latestRecord.source_type === 'שילוט'
+        ? 'קודי_תחנות_שילוט.txt'
+        : 'קודי_תחנות_מפתחים.txt';
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -472,21 +385,9 @@
     setTimeout(() => button.textContent = original, 1200);
   }
 
-  el('sendBtn').addEventListener('click', saveLatest);
-
-  el('clearInputBtn').addEventListener('click', () => {
-    el('eventTitle').value = '';
-    el('codesInput').value = '';
-    setStatus(el('sendStatus'), '', '');
-  });
-
   el('downloadBtn').addEventListener('click', downloadTxt);
   el('copyBtn').addEventListener('click', copyLatest);
   el('refreshBtn').addEventListener('click', () => loadLatest(true));
-
-  if (!databaseConfigured()) {
-    el('setupCard').hidden = false;
-  }
 
   loadLatest(false);
   setInterval(() => loadLatest(false), AUTO_REFRESH_MS);

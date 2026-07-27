@@ -1168,7 +1168,7 @@
     <div>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <h3 style="margin:0;">הודעה למפתחים</h3>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button id="sendDeveloperStopsBtn" type="button" class="secondary" disabled>שלח למחשב המרוחק</button><button id="copyAppsMessageBtn" type="button">העתק</button></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button id="sendDeveloperStopsBtn" type="button" class="secondary" disabled>שלח למחשב המרוחק</button><button id="copyTransferLinkBtn" type="button" class="secondary">העתק קישור למחשב המרוחק</button><button id="copyAppsMessageBtn" type="button">העתק</button></div>
       </div>
 
       <textarea
@@ -3221,6 +3221,39 @@ async function copyTextWithFeedback(text, button) {
 const FIREBASE_DATABASE_URL =
   'https://tachatz-copilot-default-rtdb.europe-west1.firebasedatabase.app/';
 const FIREBASE_RECORD_PATH = 'tachatz-transfer/latest';
+const TRANSFER_PAGE_URL = 'https://ofshalev.github.io/TachatzCoPilot_V2.0_realtime/transfer.html';
+
+
+async function copyTransferPageLink(button, statusElement = null) {
+  try {
+    await navigator.clipboard.writeText(TRANSFER_PAGE_URL);
+  } catch (error) {
+    const temp = document.createElement('textarea');
+    temp.value = TRANSFER_PAGE_URL;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.focus();
+    temp.select();
+    document.execCommand('copy');
+    temp.remove();
+  }
+
+  const originalText = button.textContent;
+  button.textContent = 'הקישור הועתק';
+
+  if (statusElement) {
+    setFirebaseTransferStatus(
+      statusElement,
+      'הקישור לעמוד המרוחק הועתק.',
+      'success'
+    );
+  }
+
+  setTimeout(() => {
+    button.textContent = originalText;
+  }, 1400);
+}
 
 function firebaseTransferEndpoint() {
   return FIREBASE_DATABASE_URL.replace(/\/+$/, '') +
@@ -3569,7 +3602,17 @@ function renderSignageMessages() {
       });
     });
 
+    const copyLinkButton = document.createElement('button');
+    copyLinkButton.type = 'button';
+    copyLinkButton.className = 'secondary';
+    copyLinkButton.textContent = 'העתק קישור למחשב המרוחק';
+
+    copyLinkButton.addEventListener('click', () => {
+      copyTransferPageLink(copyLinkButton, transferStatus);
+    });
+
     sendRow.appendChild(sendButton);
+    sendRow.appendChild(copyLinkButton);
 
     card.appendChild(grid);
     card.appendChild(validationMessage);
@@ -4654,6 +4697,14 @@ document.getElementById('impactBtn').addEventListener('click', async () => {
   }
 });
 
+
+
+document.getElementById('copyTransferLinkBtn').addEventListener('click', () => {
+  copyTransferPageLink(
+    document.getElementById('copyTransferLinkBtn'),
+    document.getElementById('developerTransferStatus')
+  );
+});
 
 document.getElementById('sendDeveloperStopsBtn').addEventListener('click', () => {
   const button = document.getElementById('sendDeveloperStopsBtn');

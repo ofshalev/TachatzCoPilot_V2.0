@@ -3907,13 +3907,8 @@ function createRealtimeDeveloperOutputs() {
     .map(result => `${result.stop_code} - ${result.stop_name}`)
     .join('\n');
 
-  downloadStopCodesFile(
-    fullyCancelledStops.map(result => result.stop_code),
-    'קודי_תחנות_מפתחים.txt'
-  );
-
   document.getElementById('impactStatus').textContent =
-    `הודעת המפתחים נוצרה והורדת קובץ התחנות הופעלה אוטומטית עבור ${fullyCancelledStops.length} תחנות בביטול מלא.`;
+    `הודעת המפתחים נוצרה עבור ${fullyCancelledStops.length} תחנות בביטול מלא.`;
 }
 
 function exportImpactCsv() {

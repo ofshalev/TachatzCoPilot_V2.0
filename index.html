@@ -4414,21 +4414,27 @@ function initializeLocationTypeButtons() {
       button.textContent = value;
       button.dataset.secondaryLocationType = value;
 
-      button.addEventListener('click', () => {
-        secondaryTypeInput.value = value;
+     button.addEventListener('click', () => {
+  const isAlreadySelected =
+    secondaryTypeInput.value === value;
 
-        secondaryButtonsContainer
-          .querySelectorAll('.location-type-button')
-          .forEach(item => {
-            item.classList.toggle(
-              'selected',
-              item.dataset.secondaryLocationType === value
-            );
-          });
+  const newValue =
+    isAlreadySelected ? '' : value;
 
-        updateRealtimeEventTitle();
-        updateEventDescription();
-      });
+  secondaryTypeInput.value = newValue;
+
+  secondaryButtonsContainer
+    .querySelectorAll('.location-type-button')
+    .forEach(item => {
+      item.classList.toggle(
+        'selected',
+        item.dataset.secondaryLocationType === newValue
+      );
+    });
+
+  updateRealtimeEventTitle();
+  updateEventDescription();
+});
 
       secondaryButtonsContainer.appendChild(button);
     });
@@ -4459,26 +4465,31 @@ function initializeLocationTypeButtons() {
     .forEach(button => {
       button.tabIndex = -1;
 
-      button.addEventListener('click', () => {
-        const value =
-          button.dataset.primaryLocationType;
+     button.addEventListener('click', () => {
+  const value = button.dataset.primaryLocationType;
 
-        primaryTypeInput.value = value;
+  const isAlreadySelected =
+    primaryTypeInput.value === value;
 
-        primaryButtonsContainer
-          .querySelectorAll('.location-type-button')
-          .forEach(item => {
-            item.classList.toggle(
-              'selected',
-              item.dataset.primaryLocationType === value
-            );
-          });
+  const newValue =
+    isAlreadySelected ? '' : value;
 
-        renderSecondaryButtons(value);
+  primaryTypeInput.value = newValue;
 
-        updateRealtimeEventTitle();
-        updateEventDescription();
-      });
+  primaryButtonsContainer
+    .querySelectorAll('.location-type-button')
+    .forEach(item => {
+      item.classList.toggle(
+        'selected',
+        item.dataset.primaryLocationType === newValue
+      );
+    });
+
+  renderSecondaryButtons(newValue);
+
+  updateRealtimeEventTitle();
+  updateEventDescription();
+});
     });
 
   primaryTypeInput.value = 'עיר';

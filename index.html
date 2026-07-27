@@ -3446,7 +3446,9 @@ function renderSignageMessages() {
 
   const eventType = getEffectiveEventType();
   const selectedResults = lastImpactResults.filter(
-    result => Number(result.affected_count || 0) > 0
+    result =>
+      Number(result.affected_count || 0) > 0 &&
+      result.has_sign === 'כן'
   );
 
   if (!eventType) {
@@ -3457,7 +3459,7 @@ function renderSignageMessages() {
 
   if (!selectedResults.length) {
     container.innerHTML =
-      '<div class="hint">סמן תחנה או קווים כדי ליצור הודעות שילוט.</div>';
+      '<div class="hint">לא נמצאו תחנות מסומנות עם שילוט קיים.</div>';
     return;
   }
 

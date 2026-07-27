@@ -2644,20 +2644,24 @@ function updateRealtimeEventTitle() {
   
   const locationTypesToInclude = ['כביש', 'דרך', 'צומת', 'מחלף'];
 
-  const formattedPrimaryLocation =
-  primaryLocation &&
+  const location = cleanText(
+  document.getElementById('eventLocationInput').value
+);
+
+const locationTypesToInclude = ['כביש', 'דרך', 'צומת', 'מחלף'];
+
+const formattedLocation =
+  location &&
   locationTypesToInclude.includes(primaryLocationType)
-    ? `${primaryLocationType} ${primaryLocation}`
-    : primaryLocation;
-  const eventType = getEffectiveEventType();
-  const location = cleanText(document.getElementById('eventLocationInput').value);
+    ? `${primaryLocationType} ${location}`
+    : location;
   const date = cleanText(document.getElementById('eventDateInput').value);
   state.eventTitle = [
-    formattedPrimaryLocation,
-    eventType,
-    location,
-    date
-  ]
+  primaryLocation,
+  eventType,
+  formattedLocation,
+  date
+]
     .map(value => cleanText(value || ''))
     .filter(Boolean)
     .join(', ');

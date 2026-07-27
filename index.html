@@ -2637,31 +2637,40 @@ function updateRealtimeEventTitle() {
   const primaryLocation = cleanText(
     document.getElementById('eventCityInput').value
   );
-  
-  const primaryLocationType = cleanText(
-    document.getElementById('primaryLocationType').value
-  );
-  
-  const locationTypesToInclude = ['כביש', 'דרך', 'צומת', 'מחלף'];
+
+  const eventType = getEffectiveEventType();
 
   const location = cleanText(
-  document.getElementById('eventLocationInput').value
-);
+    document.getElementById('eventLocationInput').value
+  );
 
-const locationTypesToInclude = ['כביש', 'דרך', 'צומת', 'מחלף'];
+  const secondaryLocationType = cleanText(
+    document.getElementById('secondaryLocationType').value
+  );
 
-const formattedLocation =
-  location &&
-  locationTypesToInclude.includes(primaryLocationType)
-    ? `${primaryLocationType} ${location}`
-    : location;
-  const date = cleanText(document.getElementById('eventDateInput').value);
+  const locationTypesToInclude = [
+    'כביש',
+    'דרך',
+    'צומת',
+    'מחלף'
+  ];
+
+  const formattedLocation =
+    location &&
+    locationTypesToInclude.includes(secondaryLocationType)
+      ? `${secondaryLocationType} ${location}`
+      : location;
+
+  const date = cleanText(
+    document.getElementById('eventDateInput').value
+  );
+
   state.eventTitle = [
-  primaryLocation,
-  eventType,
-  formattedLocation,
-  date
-]
+    primaryLocation,
+    eventType,
+    formattedLocation,
+    date
+  ]
     .map(value => cleanText(value || ''))
     .filter(Boolean)
     .join(', ');
@@ -2669,7 +2678,7 @@ const formattedLocation =
   document.getElementById('eventTitleBox').style.display = 'block';
   document.getElementById('eventTitle').value = state.eventTitle;
 }
-
+  
 function getSelectedEventVerifications() {
   return [...document.querySelectorAll(
     'input[name="eventVerification"]:checked'

@@ -2650,11 +2650,15 @@ function updateRealtimeEventTitle() {
   const location = cleanText(document.getElementById('eventLocationInput').value);
   const date = cleanText(document.getElementById('eventDateInput').value);
   state.eventTitle = [
-  formattedPrimaryLocation,
-  eventType,
-  location,
-  date
+    formattedPrimaryLocation,
+    eventType,
+    location,
+    date
   ]
+    .map(value => cleanText(value || ''))
+    .filter(Boolean)
+    .join(', ');
+
   document.getElementById('eventTitleBox').style.display = 'block';
   document.getElementById('eventTitle').value = state.eventTitle;
 }

@@ -764,14 +764,6 @@
         <option value="תקלת רמזורים">תקלת רמזורים</option>
         <option value="אחר">אחר</option>
       </select>
-      
-      <input
-        id="customEventTypeInput"
-        class="custom-event-type-input"
-        type="text"
-        placeholder="תאר את סוג האירוע"
-        hidden
-      />
     
     </div>
 
@@ -1074,7 +1066,9 @@ const state = {
   raw: '',
   eventTitle: '',
   eventTiming: '',
-  realtimeSelections: new Map()
+  realtimeSelections: new Map(),
+  realtimeEndDateTime: '',
+  realtimeEndManuallyEdited: false
 };
 const stopCodeRe = /\b\d{4,5}\b/g;
 
@@ -2990,138 +2984,229 @@ function renderImpactTable(results) {
 }
 
 
-function renderEventTimeRanges() {
+function getRealtimeStartDateTime() {
+  const timeValue =
+    document.getElementById('reportTimeInput').value || '00:00';
+
+  const [hours, minutes] = timeValue.split(':').map(Number);
+  const now = new Date();
+
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    Number.isFinite(hours) ? hours : 0,
+    Number.isFinite(minutes) ? minutes : 0,
+    0,
+    0
+  );
+}
+
+function formatDateTimeLocalValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function parseDateTimeLocalValue(value) {
+  const match = String(value || '').match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+  );
+
+  if (!match) return null;
+
+  const date = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    Number(match[4]),
+    Number(match[5]),
+    0,
+    0
+  );
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatCopyDateTime(date) {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${formatCopyDate(date)} ${hours}:${minutes}`;
+}
+
+async function copyTextWithFeedback(text, button) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    const temp = document.createElement('textarea');
+    temp.value = text;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    temp.remove();
+  }
+
+  const originalText = button.textContent;
+  button.textContent = 'הועתק';
+
+  setTimeout(() => {
+    button.textContent = originalText;
+  }, 1200);
+}
+
+function renderEventTimeRanges(options = {}) {
   const list = document.getElementById('eventTimeRangesList');
+  if (!list) return;
+
+  if (options.resetEndTime) {
+    state.realtimeEndManuallyEdited = false;
+    state.realtimeEndDateTime = '';
+  }
+
+  const startDate = getRealtimeStartDateTime();
+  const eventType = getEffectiveEventType();
+
+  const defaultDurationMinutes =
+    eventType === 'עבודות' ? 120 : 60;
+
+  let endDate =
+    state.realtimeEndManuallyEdited
+      ? parseDateTimeLocalValue(state.realtimeEndDateTime)
+      : null;
+
+  if (!endDate) {
+    endDate = new Date(
+      startDate.getTime() +
+      defaultDurationMinutes * 60 * 1000
+    );
+
+    state.realtimeEndDateTime =
+      formatDateTimeLocalValue(endDate);
+  }
+
   list.innerHTML = '';
 
-  const title = state.eventTitle || '';
-  const timing = state.eventTiming || '';
+  const row = document.createElement('div');
+  row.style.display = 'flex';
+  row.style.alignItems = 'center';
+  row.style.justifyContent = 'flex-start';
+  row.style.gap = '14px';
+  row.style.marginBottom = '10px';
+  row.style.direction = 'rtl';
+  row.style.flexWrap = 'wrap';
 
-  const rangeDateMatch = title.match(
-  /(\d{1,2})-(\d{1,2})\.(\d{1,2})\.(\d{4})/
-);
+  function createStartGroup() {
+    const group = document.createElement('div');
+    group.style.display = 'flex';
+    group.style.alignItems = 'center';
+    group.style.gap = '6px';
 
-const singleDateMatch = title.match(
-  /(\d{1,2})\.(\d{1,2})\.(\d{4})/
-);
+    const label = document.createElement('span');
+    label.textContent = 'התחלה:';
+    label.style.fontWeight = '400';
+    label.style.color = 'var(--muted)';
 
-const timeMatch = timing.match(
-  /מ-(\d{2}:\d{2})\s+עד\s+(\d{2}:\d{2})/
-);
+    const value = document.createElement('span');
+    value.textContent = formatCopyDateTime(startDate);
+    value.style.direction = 'ltr';
+    value.style.fontFamily = 'Consolas, monospace';
+    value.style.fontSize = '15px';
+    value.style.fontWeight = '700';
+    value.style.padding = '8px 10px';
+    value.style.border = '1px solid var(--line)';
+    value.style.borderRadius = '8px';
+    value.style.background = '#f3f4f6';
 
-if ((!rangeDateMatch && !singleDateMatch) || !timeMatch) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'העתק';
 
-let startDay;
-let endDay;
-let month;
-let year;
+    button.addEventListener('click', () => {
+      copyTextWithFeedback(
+        formatCopyDateTime(startDate),
+        button
+      );
+    });
 
-if (rangeDateMatch) {
-  startDay = Number(rangeDateMatch[1]);
-  endDay = Number(rangeDateMatch[2]);
-  month = Number(rangeDateMatch[3]);
-  year = Number(rangeDateMatch[4]);
-} else {
-  startDay = Number(singleDateMatch[1]);
-  endDay = startDay;
-  month = Number(singleDateMatch[2]);
-  year = Number(singleDateMatch[3]);
-}
+    group.appendChild(label);
+    group.appendChild(value);
+    group.appendChild(button);
 
-  const startTime = timeMatch[1];
-  const endTime = timeMatch[2];
-
-  for (let day = startDay; day <= endDay; day++) {
-    const startDate = new Date(year, month - 1, day);
-    const endDate = new Date(year, month - 1, day);
-
-    if (isOvernightRange(startTime, endTime)) {
-      endDate.setDate(endDate.getDate() + 1);
-    }
-
-    const startDateText = formatCopyDate(startDate);
-const endDateText = formatCopyDate(endDate);
-
-const row = document.createElement('div');
-
-row.style.display = 'flex';
-row.style.alignItems = 'center';
-row.style.justifyContent = 'flex-start';
-row.style.gap = '14px';
-row.style.marginBottom = '10px';
-row.style.direction = 'rtl';
-row.style.flexWrap = 'wrap';
-
-function createCopyField(label, text) {
-  const group = document.createElement('div');
-
-  group.style.display = 'flex';
-  group.style.alignItems = 'center';
-  group.style.gap = '6px';
-
-  const labelElement = document.createElement('span');
-  labelElement.textContent = label;
-  labelElement.style.fontWeight = '400';
-  labelElement.style.color = 'var(--muted)';
-
-  const value = document.createElement('span');
-  value.textContent = text;
-  value.style.direction = 'ltr';
-  value.style.fontFamily = 'Consolas, monospace';
-  value.style.fontSize = '15px';
-  value.style.fontWeight = '700';
-  value.style.padding = '8px 10px';
-  value.style.border = '1px solid var(--line)';
-  value.style.borderRadius = '8px';
-  value.style.background = '#f9fafb';
-
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.textContent = 'העתק';
-
-  button.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (err) {
-      const temp = document.createElement('textarea');
-      temp.value = text;
-      document.body.appendChild(temp);
-      temp.select();
-      document.execCommand('copy');
-      temp.remove();
-    }
-
-    const originalText = button.textContent;
-    button.textContent = 'הועתק';
-
-    setTimeout(() => {
-      button.textContent = originalText;
-    }, 1200);
-  });
-
-  group.appendChild(labelElement);
-  group.appendChild(value);
-  group.appendChild(button);
-
-  return group;
-}
-
-const startDateTime =
-  `${startDateText} ${startTime}`;
-
-const endDateTime =
-  `${endDateText} ${endTime}`;
-
-row.appendChild(
-  createCopyField('התחלה:', startDateTime)
-);
-
-row.appendChild(
-  createCopyField('סיום:', endDateTime)
-);
-
-list.appendChild(row);
+    return group;
   }
+
+  function createEndGroup() {
+    const group = document.createElement('div');
+    group.style.display = 'flex';
+    group.style.alignItems = 'center';
+    group.style.gap = '6px';
+
+    const label = document.createElement('span');
+    label.textContent = 'סיום:';
+    label.style.fontWeight = '400';
+    label.style.color = 'var(--muted)';
+
+    const input = document.createElement('input');
+    input.type = 'datetime-local';
+    input.value = state.realtimeEndDateTime;
+    input.min = formatDateTimeLocalValue(startDate);
+    input.step = '60';
+    input.setAttribute('aria-label', 'מועד סיום האירוע');
+    input.style.direction = 'ltr';
+    input.style.fontFamily = 'Consolas, monospace';
+    input.style.fontSize = '15px';
+    input.style.fontWeight = '700';
+    input.style.padding = '7px 9px';
+    input.style.border = '1px solid var(--line)';
+    input.style.borderRadius = '8px';
+    input.style.background = '#fff';
+
+    input.addEventListener('change', () => {
+      const selectedEnd =
+        parseDateTimeLocalValue(input.value);
+
+      if (!selectedEnd) {
+        renderEventTimeRanges({
+          resetEndTime: true
+        });
+        return;
+      }
+
+      state.realtimeEndDateTime = input.value;
+      state.realtimeEndManuallyEdited = true;
+    });
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'העתק';
+
+    button.addEventListener('click', () => {
+      const selectedEnd =
+        parseDateTimeLocalValue(input.value);
+
+      if (!selectedEnd) return;
+
+      copyTextWithFeedback(
+        formatCopyDateTime(selectedEnd),
+        button
+      );
+    });
+
+    group.appendChild(label);
+    group.appendChild(input);
+    group.appendChild(button);
+
+    return group;
+  }
+
+  row.appendChild(createStartGroup());
+  row.appendChild(createEndGroup());
+  list.appendChild(row);
 }
 
 function formatCopyDate(date) {
@@ -4075,6 +4160,7 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
   updateCustomEventTypeVisibility();
   updateRealtimeEventTitle();
   updateEventDescription();
+  renderEventTimeRanges({ resetEndTime: true });
   document.getElementById('appsMessageOutput').value = '';
   updateSelectionStatus();
 });
@@ -4084,11 +4170,20 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
   .addEventListener('input', () => {
     updateRealtimeEventTitle();
     updateEventDescription();
+    renderEventTimeRanges({ resetEndTime: true });
     document.getElementById('appsMessageOutput').value = '';
     updateSelectionStatus();
   });
 
 document.getElementById('eventCityInput').addEventListener('input', updateRealtimeEventTitle);
+
+document.getElementById('reportTimeInput').addEventListener('input', () => {
+  renderEventTimeRanges({ resetEndTime: true });
+});
+
+document.getElementById('reportTimeInput').addEventListener('change', () => {
+  renderEventTimeRanges({ resetEndTime: true });
+});
 
 document.getElementById('eventLocationInput').addEventListener('input', () => {
   updateRealtimeEventTitle();
@@ -4133,6 +4228,7 @@ document.getElementById('eventDateInput').value = formatCurrentEventDate();
 updateRealtimeEventTitle();
 updateEventDescription();
 render();
+renderEventTimeRanges({ resetEndTime: true });
 </script>
 </body>
 </html>

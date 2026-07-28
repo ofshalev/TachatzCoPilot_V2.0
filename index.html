@@ -827,6 +827,38 @@
 @media (max-width: 760px) {
   .signage-message-grid { grid-template-columns: 1fr; }
 }
+
+.signage-content-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  direction: rtl;
+}
+
+.firebase-send-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 190px;
+  flex: 0 0 190px;
+}
+
+.firebase-send-row button {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .signage-content-row {
+    flex-direction: column;
+  }
+
+  .firebase-send-row {
+    width: 240px;
+    flex-basis: auto;
+  }
+}
+
     
   </style>
 </head>
@@ -3711,13 +3743,25 @@ if (!group.validation.valid) {
     sendRow.appendChild(sendButton);
     sendRow.appendChild(copyLinkButton);
 
-    card.appendChild(grid);
+    const signageContentRow = document.createElement('div');
+    signageContentRow.className = 'signage-content-row';
+    
+    signageContentRow.appendChild(grid);
+    signageContentRow.appendChild(sendRow);
+    
+    card.appendChild(signageContentRow);
 
     if (validationMessage) {
       card.appendChild(validationMessage);
     }
     
-    card.appendChild(sendRow);
+    const signageContentRow = document.createElement('div');
+    signageContentRow.className = 'signage-content-row';
+    
+    signageContentRow.appendChild(grid);
+    signageContentRow.appendChild(sendRow);
+    
+    card.appendChild(signageContentRow);
     card.appendChild(transferStatus);
     container.appendChild(card);
   });

@@ -3712,9 +3712,11 @@ if (!group.validation.valid) {
     sendRow.appendChild(copyLinkButton);
 
     card.appendChild(grid);
-      card.appendChild(validationMessagif (validationMessage) {
+
+    if (validationMessage) {
       card.appendChild(validationMessage);
-    }e);
+    }
+    
     card.appendChild(sendRow);
     card.appendChild(transferStatus);
     container.appendChild(card);

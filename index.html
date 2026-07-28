@@ -3416,25 +3416,29 @@ function updateDeveloperTransferButton() {
   button.disabled = fullStops.length === 0;
 }
 
-function buildSignageRows(eventType, selectedRoutes, isFullCancellation) {
+function buildSignageLines(eventType, selectedRoutes, isFullCancellation, alignment = 'right') {
+  const detailsLine =
+  alignment === 'left'
+    ? '*8787 לפרטים'
+    : 'לפרטים 8787*';
   const reasonLine = `עקב ${cleanText(eventType || '')}`.trim();
   const routes = sortRoutes(
     [...new Set((selectedRoutes || []).map(String).filter(Boolean))]
   );
 
   if (isFullCancellation) {
-    return [reasonLine, 'תחנה זו', 'מבוטלת זמנית', 'לפרטים 8787*'];
+    return [reasonLine, 'תחנה זו', 'מבוטלת זמנית', detailsLine];
   }
 
   if (routes.length === 1) {
-    return [reasonLine, 'תחנה זו מבוטלת זמנית', `לקו ${routes[0]}`, 'לפרטים 8787*'];
+    return [reasonLine, 'תחנה זו מבוטלת זמנית', `לקו ${routes[0]}`, detailsLine];
   }
 
   if (routes.length >= 2 && routes.length <= 4) {
-    return [reasonLine, 'תחנה זו מבוטלת זמנית', `לקווים ${routes.join(',')}`, 'לפרטים 8787*'];
+    return [reasonLine, 'תחנה זו מבוטלת זמנית', `לקווים ${routes.join(',')}`, detailsLine];
   }
 
-  return [reasonLine, 'חלים שינויים', 'בקווי התחבורה הציבורית', 'לפרטים 8787*'];
+  return [reasonLine, 'חלים שינויים', 'בקווי התחבורה הציבורית', detailsLine];
 }
 
 function validateSignageRows(rows) {
@@ -3557,21 +3561,32 @@ function renderSignageMessages() {
 
   selectedResults.forEach(result => {
     const selectedRoutes = [...getSelectedRoutes(result.stop_code)];
-    const rows = buildSignageRows(
-      eventType,
-      selectedRoutes,
-      isWholeStopSelected(result)
-    );
+   const isFullCancellation = isWholeStopSelected(result);
 
-    const key = rows.join('\n');
+const rightRows = buildSignageLines(
+  eventType,
+  selectedRoutes,
+  isFullCancellation,
+  'right'
+);
 
-    if (!groups.has(key)) {
-      groups.set(key, {
-        rows,
-        validation: validateSignageRows(rows),
-        stops: []
-      });
-    }
+const leftRows = buildSignageLines(
+  eventType,
+  selectedRoutes,
+  isFullCancellation,
+  'left'
+);
+
+const key = rightRows.join('\n');
+
+if (!groups.has(key)) {
+  groups.set(key, {
+    rightRows,
+    leftRows,
+    validation: validateSignageRows(rightRows),
+    stops: []
+  });
+}
 
     groups.get(key).stops.push(result);
   });

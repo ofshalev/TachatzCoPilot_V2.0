@@ -2723,6 +2723,23 @@ function formatHebrewList(values) {
   );
 }
 
+function formatLocationForDescription(location) {
+  const cleanedLocation = cleanText(location);
+
+  if (!cleanedLocation) {
+    return '';
+  }
+
+  const shouldSkipBetPrefix =
+    cleanedLocation.startsWith('מ') ||
+    cleanedLocation.startsWith('בין');
+
+  return shouldSkipBetPrefix
+    ? cleanedLocation
+    : `ב${cleanedLocation}`;
+}
+
+  
 function updateEventDescription() {
   const operator = cleanText(document.getElementById('reportingOperatorSelect').value);
   const location = cleanText(document.getElementById('eventLocationInput').value);
@@ -2749,8 +2766,13 @@ function updateEventDescription() {
     responseTypes.includes('סטייה ללא דילוג תחנות');
   const hasDelays = responseTypes.includes('עיכובים');
 
+  const locationTextForDescription =
+    locationText.startsWith('מ') || locationText.startsWith('בין')
+      ? locationText
+      : `ב${locationText}`;
+  
   const lines = [
-    `התקבל דיווח ממפעיל ${operatorText} על חסימה ב${locationText} עקב ${eventTypeText}. אומת ב${verificationText}.`
+    `התקבל דיווח ממפעיל ${operatorText} על חסימה ${locationTextForDescription} עקב ${eventTypeText}. אומת ב${verificationText}.`
   ];
 
   /*

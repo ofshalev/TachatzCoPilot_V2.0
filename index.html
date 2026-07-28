@@ -756,7 +756,6 @@
   direction: rtl;
 }
 .signage-version { min-width: 0; }
-.signage-version h4 { margin: 0 0 8px; text-align: center; }
 .signage-box {
   width: 100%;
   min-height: 138px;
@@ -1197,10 +1196,6 @@
 
       <div id="signageSection" class="signage-section">
         <h3 style="margin:0;">הודעות לשילוט</h3>
-        <div class="hint">
-          כל הודעה כוללת בדיוק 4 שורות, ועד 22 תווים בכל שורה.
-          השורה הרביעית קבועה: לפרטים 8787*
-        </div>
         <div id="signageMessagesList"></div>
       </div>
 
@@ -3509,12 +3504,11 @@ function createSignageCounts(validation) {
   return wrapper;
 }
 
-function createSignageVersion(title, rows, alignment, validation) {
+function createSignageVersion(rows, alignment, validation) {
   const version = document.createElement('div');
   version.className = 'signage-version';
 
-  const heading = document.createElement('h4');
-  heading.textContent = title;
+  
 
   const preview = document.createElement('div');
 
@@ -3548,9 +3542,9 @@ rows.forEach((row, index) => {
     copySignageMessage(rows, alignment, button);
   });
 
-  version.appendChild(heading);
+  
   version.appendChild(preview);
-  version.appendChild(createSignageCounts(validation));
+  
   version.appendChild(button);
   return version;
 }
@@ -3652,7 +3646,6 @@ if (!groups.has(key)) {
     grid.className = 'signage-message-grid';
     grid.appendChild(
       createSignageVersion(
-        'הודעה מוכנה',
         group.rightRows,
         'right',
         group.validation
@@ -3660,20 +3653,25 @@ if (!groups.has(key)) {
     );
     grid.appendChild(
       createSignageVersion(
-        'הודעה מיושרת לשמאל',
         group.leftRows,
         'left',
         group.validation
       )
     );
 
-    const validationMessage = document.createElement('div');
-    validationMessage.className =
-      `signage-validation ${group.validation.valid ? 'valid' : 'invalid'}`;
+    let validationMessage = null;
 
-    validationMessage.textContent = group.validation.valid
-      ? 'ההודעה תקינה: 4 שורות, עד 22 תווים בכל שורה.'
-      : `לא ניתן להעתיק: שורה ${group.validation.invalidIndexes.map(i => i + 1).join(', ')} חורגת מ-22 תווים.`;
+if (!group.validation.valid) {
+  validationMessage = document.createElement('div');
+  validationMessage.className = 'signage-validation invalid';
+
+  validationMessage.textContent =
+    `לא ניתן להעתיק: שורה ${
+      group.validation.invalidIndexes
+        .map(i => i + 1)
+        .join(', ')
+    } חורגת מ-22 תווים.`;
+}
 
     const sendRow = document.createElement('div');
     sendRow.className = 'firebase-send-row';
@@ -3714,7 +3712,9 @@ if (!groups.has(key)) {
     sendRow.appendChild(copyLinkButton);
 
     card.appendChild(grid);
-    card.appendChild(validationMessage);
+      card.appendChild(validationMessagif (validationMessage) {
+      card.appendChild(validationMessage);
+    }e);
     card.appendChild(sendRow);
     card.appendChild(transferStatus);
     container.appendChild(card);

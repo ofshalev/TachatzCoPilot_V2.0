@@ -3672,19 +3672,20 @@ if (!groups.has(key)) {
     if (group.stops.length > 1) {
       const stopList = document.createElement('div');
       stopList.className = 'signage-grouped-stops';
-
-    group.stops.forEach(result => {
-  const item = document.createElement('div');
-  item.className = 'signage-grouped-stop-item';
-
-  item.textContent = result.stop_name
-    ? `${result.stop_code} – ${result.stop_name}`
-    : result.stop_code;
-
-  stopList.appendChild(item);
-});
-
-card.appendChild(stopList);
+      
+          group.stops.forEach(result => {
+        const item = document.createElement('div');
+        item.className = 'signage-grouped-stop-item';
+      
+        item.textContent = result.stop_name
+          ? `${result.stop_code} – ${result.stop_name}`
+          : result.stop_code;
+      
+        stopList.appendChild(item);
+      });
+      
+      card.appendChild(stopList);
+    }
 
     const grid = document.createElement('div');
     grid.className = 'signage-message-grid';

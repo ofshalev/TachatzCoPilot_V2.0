@@ -2766,10 +2766,19 @@ function updateEventDescription() {
     responseTypes.includes('סטייה ללא דילוג תחנות');
   const hasDelays = responseTypes.includes('עיכובים');
 
-  const locationTextForDescription =
-    locationText.startsWith('מ') || locationText.startsWith('בין')
-      ? locationText
-      : `ב${locationText}`;
+  const startsWithRange =
+  locationText.startsWith('בין ') ||
+  (
+    locationText.startsWith('מ') &&
+    (
+      locationText.includes(' עד ') ||
+      locationText.includes(' ועד ')
+    )
+  );
+
+const locationTextForDescription = startsWithRange
+  ? locationText
+  : `ב${locationText}`;
   
   const lines = [
     `התקבל דיווח ממפעיל ${operatorText} על חסימה ${locationTextForDescription} עקב ${eventTypeText}. אומת ב${verificationText}.`

@@ -738,15 +738,26 @@
   gap: 8px;
   margin: 0 0 14px;
 }
+.signage-grouped-stop-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 18px;
+  direction: rtl;
+  text-align: right;
+}
+
 .signage-grouped-stop-item {
-  display: inline-block;
-  padding: 6px 9px;
-  border: 1px solid #d7deea;
-  border-radius: 8px;
-  background: #fff;
-  color: #334155;
-  font-size: 13px;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1.45;
 }
 .signage-message-grid {
   display: grid;
@@ -3662,17 +3673,18 @@ if (!groups.has(key)) {
       const stopList = document.createElement('div');
       stopList.className = 'signage-grouped-stops';
 
-      group.stops.forEach(result => {
-        const item = document.createElement('span');
-        item.className = 'signage-grouped-stop-item';
-        item.textContent = result.stop_name
-          ? `${result.stop_code} – ${result.stop_name}`
-          : result.stop_code;
-        stopList.appendChild(item);
-      });
+    group.stops.forEach(result => {
+  const item = document.createElement('div');
+  item.className = 'signage-grouped-stop-item';
 
-      card.appendChild(stopList);
-    }
+  item.textContent = result.stop_name
+    ? `${result.stop_code} – ${result.stop_name}`
+    : result.stop_code;
+
+  stopList.appendChild(item);
+});
+
+card.appendChild(stopList);
 
     const grid = document.createElement('div');
     grid.className = 'signage-message-grid';

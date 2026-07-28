@@ -759,29 +759,26 @@
 .signage-version h4 { margin: 0 0 8px; text-align: center; }
 .signage-box {
   width: 100%;
-  min-height: 140px;
+  min-height: 138px;
   box-sizing: border-box;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   background: #fff;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 17px;
   font-weight: 700;
-  line-height: 1.55;
-  resize: none;
+  line-height: 1.65;
   overflow: hidden;
-  white-space: pre;
 }
+
 .signage-box.right-version {
   direction: rtl;
   text-align: right;
 }
 
 .signage-box.left-version {
-  direction: ltr;
   text-align: left;
-  unicode-bidi: plaintext;
 }
 .signage-counts {
   display: grid;
@@ -3519,21 +3516,28 @@ function createSignageVersion(title, rows, alignment, validation) {
   const heading = document.createElement('h4');
   heading.textContent = title;
 
-  const textarea = document.createElement('textarea');
-  textarea.className =
-    `signage-box ${alignment === 'left' ? 'left-version' : 'right-version'}`;
-  textarea.readOnly = true;
-  textarea.value = rows.join('\n');
-  
+  const preview = document.createElement('div');
+
+preview.className =
+  `signage-box ${alignment === 'left' ? 'left-version' : 'right-version'}`;
+
+rows.forEach((row, index) => {
+  const line = document.createElement('div');
+  line.textContent = row;
+
   if (alignment === 'left') {
-  textarea.style.textAlign = 'left';
-  textarea.style.direction = 'ltr';
-  textarea.style.unicodeBidi = 'plaintext';
+    line.style.textAlign = 'left';
+
+    // Only the final phone-details row needs LTR character order.
+    line.style.direction =
+      index === rows.length - 1 ? 'ltr' : 'rtl';
   } else {
-  textarea.style.textAlign = 'right';
-  textarea.style.direction = 'rtl';
-  textarea.style.unicodeBidi = 'plaintext';
+    line.style.textAlign = 'right';
+    line.style.direction = 'rtl';
   }
+
+  preview.appendChild(line);
+});
 
   const button = document.createElement('button');
   button.type = 'button';
@@ -3545,7 +3549,7 @@ function createSignageVersion(title, rows, alignment, validation) {
   });
 
   version.appendChild(heading);
-  version.appendChild(textarea);
+  version.appendChild(preview);
   version.appendChild(createSignageCounts(validation));
   version.appendChild(button);
   return version;

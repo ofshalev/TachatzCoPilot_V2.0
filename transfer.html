@@ -215,6 +215,7 @@
       <button id="downloadBtn" type="button" disabled>הורד TXT</button>
       <button id="copyBtn" type="button" class="secondary" disabled>העתק קודים</button>
       <button id="refreshBtn" type="button" class="secondary">רענן</button>
+      <button id="clearBtn" type="button" class="secondary" disabled>נקה</button>
     </div>
 
     <div id="readStatus" class="status"></div>
@@ -232,7 +233,7 @@
     'https://tachatz-copilot-default-rtdb.europe-west1.firebasedatabase.app/';
 
   const RECORD_PATH = 'tachatz-transfer/latest';
-  const AUTO_REFRESH_MS = 10000;
+  const AUTO_REFRESH_MS = 1000;
   const STALE_AFTER_MS = 60 * 60 * 1000;
 
   let latestRecord = null;
@@ -272,6 +273,56 @@
     }).format(date);
   }
 
+async function clearLatest() {
+  if (!latestRecord) {
+    return;
+  }
+
+  const confirmed = confirm('לנקות את הרשימה האחרונה?');
+
+  if (!confirmed) {
+    return;
+  }
+
+  if (!databaseConfigured()) {
+    setStatus(
+      el('readStatus'),
+      'Firebase עדיין לא הוגדר בקובץ.',
+      'warning'
+    );
+    return;
+  }
+
+  el('clearBtn').disabled = true;
+
+  try {
+    const response = await fetch(endpoint(), {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    latestRecord = null;
+    renderLatest();
+
+    setStatus(
+      el('readStatus'),
+      'הרשימה נוקתה.',
+      'success'
+    );
+  } catch (error) {
+    el('clearBtn').disabled = false;
+
+    setStatus(
+      el('readStatus'),
+      `לא ניתן לנקות את הרשימה: ${error.message}.`,
+      'error'
+    );
+  }
+}
+  
   async function loadLatest(showLoading = true) {
     if (!databaseConfigured()) {
       setStatus(el('readStatus'), 'Firebase עדיין לא הוגדר בקובץ.', 'warning');
@@ -325,23 +376,25 @@
   }
 
   function renderLatest() {
-    if (!latestRecord) {
-      el('latestTitle').textContent = 'טרם נטענה רשימה';
-      el('latestTime').textContent = '—';
-      el('latestCodes').value = '';
-      el('downloadBtn').disabled = true;
-      el('copyBtn').disabled = true;
-      return;
-    }
-
-    const codes = normalizeCodes(latestRecord.stop_codes.join('\n'));
-
-    el('latestTitle').textContent = latestRecord.title || 'ללא כותרת';
-    el('latestTime').textContent = formatIsraelDateTime(latestRecord.created_at);
-    el('latestCodes').value = codes.join('\n');
-    el('downloadBtn').disabled = !codes.length;
-    el('copyBtn').disabled = !codes.length;
+  if (!latestRecord) {
+    el('latestTitle').textContent = 'טרם נטענה רשימה';
+    el('latestTime').textContent = '—';
+    el('latestCodes').value = '';
+    el('downloadBtn').disabled = true;
+    el('copyBtn').disabled = true;
+    el('clearBtn').disabled = true;
+    return;
   }
+
+  const codes = normalizeCodes(latestRecord.stop_codes.join('\n'));
+
+  el('latestTitle').textContent = latestRecord.title || 'ללא כותרת';
+  el('latestTime').textContent = formatIsraelDateTime(latestRecord.created_at);
+  el('latestCodes').value = codes.join('\n');
+  el('downloadBtn').disabled = !codes.length;
+  el('copyBtn').disabled = !codes.length;
+  el('clearBtn').disabled = false;
+}
 
   function downloadTxt() {
     if (!latestRecord) return;
@@ -388,6 +441,7 @@
   el('downloadBtn').addEventListener('click', downloadTxt);
   el('copyBtn').addEventListener('click', copyLatest);
   el('refreshBtn').addEventListener('click', () => loadLatest(true));
+  el('clearBtn').addEventListener('click', clearLatest);
 
   loadLatest(false);
   setInterval(() => loadLatest(false), AUTO_REFRESH_MS);

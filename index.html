@@ -3743,29 +3743,22 @@ if (!group.validation.valid) {
     sendRow.appendChild(sendButton);
     sendRow.appendChild(copyLinkButton);
 
-    const signageContentRow = document.createElement('div');
+   const signageContentRow = document.createElement('div');
     signageContentRow.className = 'signage-content-row';
     
     signageContentRow.appendChild(grid);
     signageContentRow.appendChild(sendRow);
     
     card.appendChild(signageContentRow);
-
+    
     if (validationMessage) {
       card.appendChild(validationMessage);
     }
     
-    const signageContentRow = document.createElement('div');
-    signageContentRow.className = 'signage-content-row';
-    
-    signageContentRow.appendChild(grid);
-    signageContentRow.appendChild(sendRow);
-    
-    card.appendChild(signageContentRow);
     card.appendChild(transferStatus);
     container.appendChild(card);
-  });
-}
+    });
+    }
 
 function renderEventTimeRanges(options = {}) {
   const list = document.getElementById('eventTimeRangesList');

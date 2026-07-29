@@ -2706,13 +2706,30 @@ function formatCurrentEventDate() {
   return `${day}.${month}.${now.getFullYear()}`;
 }
 
-  function getEventDistrict(primaryLocation) {
-  const normalizedLocation = cleanText(primaryLocation || '')
-    .replace(/-/g, ' ')
+ function normalizeDistrictLocation(value) {
+  return cleanText(value || '')
+    .replace(/["״׳']/g, '')
+    .replace(/[-–—]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
 
-  const telAvivDistrictLocations = [
+function getEventDistrict(
+  primaryLocation,
+  primaryLocationType = '',
+  secondaryLocation = '',
+  secondaryLocationType = ''
+) {
+  const normalizedPrimary =
+    normalizeDistrictLocation(primaryLocation);
+
+  const normalizedSecondary =
+    normalizeDistrictLocation(secondaryLocation);
+
+  const normalizedSecondaryType =
+    normalizeDistrictLocation(secondaryLocationType);
+
+  const telAvivDistrictCities = [
     'תל אביב',
     'פתח תקווה',
     'רמת גן',
@@ -2721,7 +2738,6 @@ function formatCurrentEventDate() {
     'בת ים',
     'ראשון לציון',
     'ראשלצ',
-    'ראשל"צ',
     'אזור',
     'קרית אונו',
     'קריית אונו',
@@ -2734,11 +2750,73 @@ function formatCurrentEventDate() {
     'ראש העין',
     'אלעד',
     'כפר קאסם'
-  ];
+  ].map(normalizeDistrictLocation);
 
-  return telAvivDistrictLocations.includes(normalizedLocation)
-    ? 'מחוז תל אביב'
-    : 'מחוז מרכז';
+  const telAvivDistrictInterchanges = [
+    'ארלוזורוב',
+    'השלום',
+    'לה גוארדיה',
+    'קיבוץ גלויות',
+    'חולון',
+    'וולפסון',
+    'דב הוז',
+    'יוספטל',
+    'קוממיות',
+    'משה דיין',
+    'מבוא איילון',
+    'גן רווה',
+    'ראשון לציון',
+    'חולון מזרח',
+    'השבעה',
+    'גנות',
+    'מסובים',
+    'אלוף שדה',
+    'בר אילן',
+    'גבעת שמואל',
+    'גהה',
+    'אם המושבות',
+    'תקווה',
+    'ירקון',
+    'גת רימון',
+    'שעריה',
+    'עמישב',
+    'פתח תקווה דרום',
+    'אונו',
+    'ראשונים',
+    'עין הקורא',
+    'קרית ראשון',
+    'חולות',
+    'אבן העזר',
+    'ראש העין מזרח'
+  ].map(normalizeDistrictLocation);
+
+  const telAvivDistrictJunctions = [
+    'גלילות',
+    'יהוד מערב',
+    'סביון',
+    'בית דגן',
+    'חולון'
+  ].map(normalizeDistrictLocation);
+
+  if (telAvivDistrictCities.includes(normalizedPrimary)) {
+    return 'מחוז תל אביב';
+  }
+
+  if (
+    normalizedSecondaryType === 'מחלף' &&
+    telAvivDistrictInterchanges.includes(normalizedSecondary)
+  ) {
+    return 'מחוז תל אביב';
+  }
+
+  if (
+    normalizedSecondaryType === 'צומת' &&
+    telAvivDistrictJunctions.includes(normalizedSecondary)
+  ) {
+    return 'מחוז תל אביב';
+  }
+
+  return 'מחוז מרכז';
 }
 
 function updateRealtimeEventDistrict() {
@@ -2748,20 +2826,36 @@ function updateRealtimeEventDistrict() {
   const districtElement =
     document.getElementById('eventDistrict');
 
+  if (!districtBox || !districtElement) return;
+
   const primaryLocation = cleanText(
     document.getElementById('eventCityInput').value
   );
 
-  if (!districtBox || !districtElement) return;
+  const primaryLocationType = cleanText(
+    document.getElementById('primaryLocationType').value
+  );
 
-  if (!primaryLocation) {
+  const secondaryLocation = cleanText(
+    document.getElementById('eventLocationInput').value
+  );
+
+  const secondaryLocationType = cleanText(
+    document.getElementById('secondaryLocationType').value
+  );
+
+  if (!primaryLocation && !secondaryLocation) {
     districtElement.textContent = '';
     districtBox.style.display = 'none';
     return;
   }
 
-  districtElement.textContent =
-    getEventDistrict(primaryLocation);
+  districtElement.textContent = getEventDistrict(
+    primaryLocation,
+    primaryLocationType,
+    secondaryLocation,
+    secondaryLocationType
+  );
 
   districtBox.style.display = 'flex';
 }
@@ -4660,7 +4754,8 @@ function initializeLocationTypeButtons() {
     });
 
   updateRealtimeEventTitle();
-  updateEventDescription();
+updateEventDescription();
+updateRealtimeEventDistrict();
 });
 
       secondaryButtonsContainer.appendChild(button);
@@ -4714,8 +4809,9 @@ function initializeLocationTypeButtons() {
 
   renderSecondaryButtons(newValue);
 
-  updateRealtimeEventTitle();
-  updateEventDescription();
+updateRealtimeEventTitle();
+updateEventDescription();
+updateRealtimeEventDistrict();
 });
     });
 
@@ -5104,6 +5200,7 @@ document.getElementById('reportTimeInput').addEventListener('change', () => {
 document.getElementById('eventLocationInput').addEventListener('input', () => {
   updateRealtimeEventTitle();
   updateEventDescription();
+  updateRealtimeEventDistrict();
 });
 
 document.getElementById('reportingOperatorSelect').addEventListener('change', updateEventDescription);

@@ -870,6 +870,21 @@
   }
 }
 
+    .event-district-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.event-district-label {
+  font-weight: 600;
+}
+
     
   </style>
 </head>
@@ -1220,6 +1235,19 @@
         <div style="display:flex; gap:8px; flex-wrap:wrap;"><button id="sendDeveloperStopsBtn" type="button" class="secondary" disabled>שלח למחשב המרוחק</button><button id="copyTransferLinkBtn" type="button" class="secondary">העתק קישור למחשב המרוחק</button><button id="copyAppsMessageBtn" type="button">העתק</button></div>
       </div>
 
+<div
+  id="eventDistrictBox"
+  class="event-district-box"
+  style="display:none"
+>
+  <span class="event-district-label">
+    מחוז משרד התחבורה:
+  </span>
+
+  <strong id="eventDistrict"></strong>
+</div>
+
+      
       <textarea
         id="appsMessageOutput"
         rows="8"
@@ -2676,6 +2704,66 @@ function formatCurrentEventDate() {
   const day = String(now.getDate()).padStart(2, '0');
   const month = String(now.getMonth() + 1).padStart(2, '0');
   return `${day}.${month}.${now.getFullYear()}`;
+}
+
+  function getEventDistrict(primaryLocation) {
+  const normalizedLocation = cleanText(primaryLocation || '')
+    .replace(/-/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const telAvivDistrictLocations = [
+    'תל אביב',
+    'פתח תקווה',
+    'רמת גן',
+    'גבעתיים',
+    'חולון',
+    'בת ים',
+    'ראשון לציון',
+    'ראשלצ',
+    'ראשל"צ',
+    'אזור',
+    'קרית אונו',
+    'קריית אונו',
+    'גני תקווה',
+    'אור יהודה',
+    'סביון',
+    'יהוד',
+    'יהוד מונוסון',
+    'גבעת שמואל',
+    'ראש העין',
+    'אלעד',
+    'כפר קאסם'
+  ];
+
+  return telAvivDistrictLocations.includes(normalizedLocation)
+    ? 'מחוז תל אביב'
+    : 'מחוז מרכז';
+}
+
+function updateRealtimeEventDistrict() {
+  const districtBox =
+    document.getElementById('eventDistrictBox');
+
+  const districtElement =
+    document.getElementById('eventDistrict');
+
+  const primaryLocation = cleanText(
+    document.getElementById('eventCityInput').value
+  );
+
+  if (!districtBox || !districtElement) return;
+
+  if (!primaryLocation) {
+    districtElement.textContent = '';
+    districtBox.style.display = 'none';
+    return;
+  }
+
+  districtElement.textContent =
+    getEventDistrict(primaryLocation);
+
+  districtBox.style.display = 'flex';
 }
 
 function updateRealtimeEventTitle() {
@@ -5002,6 +5090,7 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
 document.getElementById('eventCityInput').addEventListener('input', () => {
   updateRealtimeEventTitle();
   updateEventDescription();
+  updateRealtimeEventDistrict();
 });
 
 document.getElementById('reportTimeInput').addEventListener('input', () => {
@@ -5054,6 +5143,7 @@ document.getElementById('copyEventDescriptionBtn').addEventListener('click', asy
 document.getElementById('eventDateInput').value = formatCurrentEventDate();
 updateRealtimeEventTitle();
 updateEventDescription();
+updateRealtimeEventDistrict();
 render();
 renderEventTimeRanges({ resetEndTime: true });
 renderSignageMessages();

@@ -2714,6 +2714,45 @@ function formatCurrentEventDate() {
     .trim();
 }
 
+  function isTelAvivDistrictInterchange(
+  secondaryLocation,
+  interchangeNames
+) {
+  const normalizedLocation =
+    normalizeDistrictLocation(secondaryLocation);
+
+  // Normal single-interchange entry
+  if (interchangeNames.includes(normalizedLocation)) {
+    return true;
+  }
+
+  /*
+    Range examples:
+    בין מחלף רוקח למחלף קק"ל
+    בין רוקח לקק"ל
+  */
+  const rangeMatch = normalizedLocation.match(
+    /^בין\s+(?:מחלף\s+)?(.+?)\s+ל(?:מחלף\s+)?(.+)$/
+  );
+
+  if (!rangeMatch) {
+    return false;
+  }
+
+  const firstInterchange =
+    normalizeDistrictLocation(rangeMatch[1]);
+
+  const secondInterchange =
+    normalizeDistrictLocation(rangeMatch[2]);
+
+  return (
+    interchangeNames.includes(firstInterchange) &&
+    interchangeNames.includes(secondInterchange)
+  );
+}
+
+  
+
 function getEventDistrict(
   primaryLocation,
   primaryLocationType = '',
@@ -2753,6 +2792,9 @@ function getEventDistrict(
   ].map(normalizeDistrictLocation);
 
   const telAvivDistrictInterchanges = [
+    'ההלכה',
+    'רוקח',
+    'קק"ל',
     'ארלוזורוב',
     'השלום',
     'לה גוארדיה',
@@ -2803,11 +2845,14 @@ function getEventDistrict(
   }
 
   if (
-    normalizedSecondaryType === 'מחלף' &&
-    telAvivDistrictInterchanges.includes(normalizedSecondary)
-  ) {
-    return 'מחוז תל אביב';
-  }
+  normalizedSecondaryType === 'מחלף' &&
+  isTelAvivDistrictInterchange(
+    secondaryLocation,
+    telAvivDistrictInterchanges
+  )
+) {
+  return 'מחוז תל אביב';
+}
 
   if (
     normalizedSecondaryType === 'צומת' &&

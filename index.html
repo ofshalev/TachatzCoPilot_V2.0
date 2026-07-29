@@ -2840,31 +2840,34 @@ function getEventDistrict(
     'חולון'
   ].map(normalizeDistrictLocation);
 
-  if (telAvivDistrictCities.includes(normalizedPrimary)) {
+  if (
+    telAvivDistrictCities.includes(normalizedPrimary)
+  ) {
+    return 'מחוז תל אביב';
+  }
+
+  const isInterchangeRange =
+    normalizedSecondary.startsWith('בין מחלף ') ||
+    normalizedSecondary.startsWith('ממחלף ');
+
+  if (
+    (
+      normalizedSecondaryType === 'מחלף' ||
+      isInterchangeRange
+    ) &&
+    isTelAvivDistrictInterchange(
+      secondaryLocation,
+      telAvivDistrictInterchanges
+    )
+  ) {
     return 'מחוז תל אביב';
   }
 
   if (
- const isInterchangeRange =
-  normalizedSecondary.startsWith('בין מחלף ') ||
-  normalizedSecondary.startsWith('ממחלף ');
-
-if (
-  (
-    normalizedSecondaryType === 'מחלף' ||
-    isInterchangeRange
-  ) &&
-  isTelAvivDistrictInterchange(
-    secondaryLocation,
-    telAvivDistrictInterchanges
-  )
-) {
-  return 'מחוז תל אביב';
-}
-
-  if (
     normalizedSecondaryType === 'צומת' &&
-    telAvivDistrictJunctions.includes(normalizedSecondary)
+    telAvivDistrictJunctions.includes(
+      normalizedSecondary
+    )
   ) {
     return 'מחוז תל אביב';
   }
@@ -2872,6 +2875,7 @@ if (
   return 'מחוז מרכז';
 }
 
+  
 function updateRealtimeEventDistrict() {
   const districtBox =
     document.getElementById('eventDistrictBox');

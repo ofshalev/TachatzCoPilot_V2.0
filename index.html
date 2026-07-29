@@ -2845,7 +2845,15 @@ function getEventDistrict(
   }
 
   if (
-  normalizedSecondaryType === 'מחלף' &&
+ const isInterchangeRange =
+  normalizedSecondary.startsWith('בין מחלף ') ||
+  normalizedSecondary.startsWith('ממחלף ');
+
+if (
+  (
+    normalizedSecondaryType === 'מחלף' ||
+    isInterchangeRange
+  ) &&
   isTelAvivDistrictInterchange(
     secondaryLocation,
     telAvivDistrictInterchanges
@@ -2936,11 +2944,17 @@ function updateRealtimeEventTitle() {
     'מחלף'
   ];
 
-  const formattedLocation =
-    location &&
-    locationTypesToInclude.includes(secondaryLocationType)
-      ? `${secondaryLocationType} ${location}`
-      : location;
+  const locationAlreadyDescribesRange =
+  location.startsWith('בין ') ||
+  location.startsWith('ממחלף ') ||
+  location.startsWith('מצומת ');
+
+const formattedLocation =
+  location &&
+  locationTypesToInclude.includes(secondaryLocationType) &&
+  !locationAlreadyDescribesRange
+    ? `${secondaryLocationType} ${location}`
+    : location;
 
   const date = cleanText(
     document.getElementById('eventDateInput').value

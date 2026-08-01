@@ -946,6 +946,7 @@ if (selectedEnd <= new Date()) {
 
     await patchEvent(eventId, values);
     Object.assign(record, values);
+    openSetEndEventId = null;
 
     el('readStatus').textContent =
       'שעת הסיום עודכנה.';

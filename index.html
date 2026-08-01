@@ -5420,12 +5420,7 @@ document.getElementById('impactBtn').addEventListener('click', async () => {
   lastImpactResults = [];
   document.getElementById('appsMessageOutput').value =
   'אין עדכון מפתחים באירוע זה';
-  document.getElementById(
-  'sendDeveloperStopsBtn'
-  ).disabled = true;
-  document.getElementById(
-    'copyDeveloperTransferLinkBtn'
-  ).disabled = true;
+  
   document.getElementById('selectionStatus').textContent = 'טרם נבחרו ביטולים.';
 
   if (!state.raw) {

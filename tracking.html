@@ -225,7 +225,6 @@
     }
 
     .countdown {
-      font-family: "Segoe UI", Arial, sans-serif;
       font-size: 27px;
       font-weight: 800;
       direction: ltr;
@@ -233,6 +232,23 @@
       letter-spacing: 1px;
     }
 
+    .countdown-label,
+    .countdown {
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+
+        .countdown {
+      direction: rtl;
+      text-align: right;
+    }
+    
+    .countdown-number {
+      direction: ltr;
+      unicode-bidi: isolate;
+      display: inline-block;
+    }
+    
     .event-card.warning .countdown { color: var(--warning); }
     .event-card.overdue .countdown { color: var(--danger); }
 
@@ -418,13 +434,13 @@
       String(seconds).padStart(2, '0')
     ].join(':');
   }
-
-  function countdownText(record) {
+  
+function countdownText(record) {
   const effectiveDeadline =
     getEffectiveDeadline(record);
 
   if (!effectiveDeadline) {
-    return 'לא הוגדר מועד בדיקה או סיום';
+    return 'לא הוגדר מועד';
   }
 
   const deadlineType =
@@ -435,17 +451,11 @@
 
   if (remaining <= 0) {
     return deadlineType === 'planned-end'
-      ? 'הגיע מועד הסיום — איחור ' +
-          formatDuration(remaining)
-      : 'הגיע זמן הבדיקה — איחור ' +
-          formatDuration(remaining);
+      ? `איחור ${formatDuration(remaining)}`
+      : `איחור ${formatDuration(remaining)}`;
   }
 
-  return deadlineType === 'planned-end'
-    ? 'נותרו עד לסיום ' +
-        formatDuration(remaining)
-    : 'נותרו עד לבדיקה ' +
-        formatDuration(remaining);
+  return formatDuration(remaining);
 }
 
   function escapeHtml(value) {
@@ -540,8 +550,8 @@
 >
     ${
       getDeadlineType(record) === 'planned-end'
-        ? 'זמן עד לסיום המשוער'
-        : 'זמן עד לבדיקה'
+      ? 'נותרו עד לסיום המשוער'
+      : 'נותרו עד לבדיקה'
     }
   </div>
 
@@ -696,8 +706,8 @@ function getDeadlineType(record) {
 if (label) {
   label.textContent =
     getDeadlineType(record) === 'planned-end'
-      ? 'זמן עד לסיום המשוער'
-      : 'זמן עד לבדיקה';
+      ? 'נותרו עד לסיום המשוער'
+      : 'נותרו עד לבדיקה';
 }
       });
 

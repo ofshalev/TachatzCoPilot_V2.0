@@ -886,6 +886,81 @@
 }
 
     
+.tracking-send-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.tracking-send-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 360px) auto;
+  gap: 12px;
+  align-items: end;
+  justify-content: start;
+}
+
+.tracking-send-layout .field-group {
+  min-width: 240px;
+}
+
+.tracking-send-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tracking-send-button {
+  background: #7c3aed;
+}
+
+.tracking-send-button:hover {
+  background: #6d28d9;
+}
+
+.tracking-page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: #374151;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.tracking-page-link:hover {
+  background: #1f2937;
+}
+
+.tracking-send-status {
+  margin-top: 9px;
+  min-height: 20px;
+  font-size: 13px;
+}
+
+.tracking-send-status.success { color: var(--ok); }
+.tracking-send-status.error { color: var(--bad); font-weight: 700; }
+.tracking-send-status.working { color: var(--warn); }
+
+@media (max-width: 700px) {
+  .tracking-send-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tracking-send-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tracking-send-actions > * {
+    width: 100%;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -1275,6 +1350,43 @@
         <div id="eventTimeRangesList"></div>
       </div>
     </div>
+  </section>
+
+
+  <section id="trackingSendSection" class="card">
+    <h2 style="margin-top:0;">5. מעקב אחר האירוע</h2>
+    <p class="hint" style="margin-top:0;">
+      אירוע מסוג עבודות ייבדק כל שעתיים. כל אירוע אחר ייבדק בכל שעה.
+      שעת הסיום המשוערת ניתנת לעריכה ואינה משנה את תדירות הבדיקה.
+    </p>
+
+    <div class="tracking-send-layout">
+      <div class="field-group">
+        <label for="trackingPlannedEndInput">סיום משוער של האירוע</label>
+        <input id="trackingPlannedEndInput" type="datetime-local" />
+      </div>
+
+      <div class="tracking-send-actions">
+        <button
+          id="sendToTrackingBtn"
+          type="button"
+          class="tracking-send-button"
+        >
+          שלח למעקב
+        </button>
+
+        <a
+          class="tracking-page-link"
+          href="./tracking.html"
+          target="_blank"
+          rel="noopener"
+        >
+          פתח עמוד מעקב
+        </a>
+      </div>
+    </div>
+
+    <div id="trackingSendStatus" class="tracking-send-status"></div>
   </section>
 
   <section id="rawSection" class="card" style="display:none">
@@ -3574,6 +3686,231 @@ const FIREBASE_RECORD_PATH = 'tachatz-transfer/latest';
 const TRANSFER_PAGE_URL = 'https://ofshalev.github.io/TachatzCoPilot_V2.0_realtime/transfer.html';
 
 
+const TRACKING_RECORD_PATH = 'tachatz-followup/events';
+const TRACKING_PAGE_URL = 'https://ofshalev.github.io/TachatzCoPilot_V2.0_realtime/tracking.html';
+
+let trackingPlannedEndManuallyEdited = false;
+
+function trackingCollectionEndpoint() {
+  return FIREBASE_DATABASE_URL.replace(/\/+$/, '') +
+    '/' + TRACKING_RECORD_PATH + '.json';
+}
+
+function trackingEventEndpoint(eventId) {
+  return FIREBASE_DATABASE_URL.replace(/\/+$/, '') +
+    '/' + TRACKING_RECORD_PATH + '/' +
+    encodeURIComponent(eventId) + '.json';
+}
+
+function getTrackingReviewIntervalMinutes(eventType) {
+  return cleanText(eventType) === 'עבודות' ? 120 : 60;
+}
+
+function setTrackingSendStatus(message, type = '') {
+  const element = document.getElementById('trackingSendStatus');
+  if (!element) return;
+
+  element.textContent = message || '';
+  element.className =
+    'tracking-send-status' + (type ? ` ${type}` : '');
+}
+
+function getDefaultTrackingPlannedEnd() {
+  const existingEnd =
+    parseDateTimeLocalValue(state.realtimeEndDateTime);
+
+  if (existingEnd) {
+    return existingEnd;
+  }
+
+  const start = getRealtimeStartDateTime();
+  const eventType = getEffectiveEventType();
+  const durationMinutes =
+    getTrackingReviewIntervalMinutes(eventType);
+
+  return new Date(
+    start.getTime() + durationMinutes * 60 * 1000
+  );
+}
+
+function syncTrackingPlannedEndInput(force = false) {
+  const input =
+    document.getElementById('trackingPlannedEndInput');
+
+  if (!input) return;
+
+  if (trackingPlannedEndManuallyEdited && !force) {
+    return;
+  }
+
+  input.value =
+    formatDateTimeLocalValue(
+      getDefaultTrackingPlannedEnd()
+    );
+}
+
+function createTrackingEventId() {
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === 'function'
+  ) {
+    return window.crypto.randomUUID();
+  }
+
+  return (
+    'event-' +
+    Date.now() +
+    '-' +
+    Math.random().toString(36).slice(2, 10)
+  );
+}
+
+async function sendCurrentEventToTracking() {
+  const button =
+    document.getElementById('sendToTrackingBtn');
+
+  const title =
+    cleanText(
+      document.getElementById('eventTitle').value
+    ) ||
+    cleanText(state.eventTitle);
+
+  const operator =
+    cleanText(
+      document.getElementById(
+        'reportingOperatorSelect'
+      ).value
+    );
+
+  const eventType = getEffectiveEventType();
+
+  const plannedEndInput =
+    document.getElementById(
+      'trackingPlannedEndInput'
+    );
+
+  const plannedEnd =
+    parseDateTimeLocalValue(
+      plannedEndInput ? plannedEndInput.value : ''
+    );
+
+  if (!title || title.split(',').length < 4) {
+    setTrackingSendStatus(
+      'יש להשלים כותרת אירוע מלאה הכוללת ארבעה חלקים.',
+      'error'
+    );
+    return;
+  }
+
+  if (!operator) {
+    setTrackingSendStatus(
+      'יש לבחור מפעיל מדווח.',
+      'error'
+    );
+    return;
+  }
+
+  if (!eventType) {
+    setTrackingSendStatus(
+      'יש לבחור סוג אירוע.',
+      'error'
+    );
+    return;
+  }
+
+  if (!plannedEnd) {
+    setTrackingSendStatus(
+      'יש לבחור שעת סיום משוערת.',
+      'error'
+    );
+    return;
+  }
+
+  const now = new Date();
+
+  if (plannedEnd <= now) {
+    setTrackingSendStatus(
+      'שעת הסיום המשוערת חייבת להיות בעתיד.',
+      'error'
+    );
+    return;
+  }
+
+  const reviewIntervalMinutes =
+    getTrackingReviewIntervalMinutes(eventType);
+
+  const eventId = createTrackingEventId();
+
+  const record = {
+    id: eventId,
+    title,
+    operator,
+    event_type: eventType,
+    status: 'open',
+    created_at: now.toISOString(),
+    last_update_at: now.toISOString(),
+    next_review_at: new Date(
+      now.getTime() +
+      reviewIntervalMinutes * 60 * 1000
+    ).toISOString(),
+    planned_end_at: plannedEnd.toISOString(),
+    review_interval_minutes: reviewIntervalMinutes
+  };
+
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = 'שולח...';
+
+  setTrackingSendStatus(
+    'שולח את האירוע לעמוד המעקב...',
+    'working'
+  );
+
+  try {
+    const response = await fetch(
+      trackingEventEndpoint(eventId),
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(record)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    setTrackingSendStatus(
+      `האירוע נשלח למעקב. הבדיקה הבאה בעוד ${
+        reviewIntervalMinutes === 120
+          ? 'שעתיים'
+          : 'שעה'
+      }.`,
+      'success'
+    );
+
+    button.textContent = 'נשלח למעקב';
+
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 1600);
+  } catch (error) {
+    setTrackingSendStatus(
+      `השליחה למעקב נכשלה: ${error.message}`,
+      'error'
+    );
+
+    button.textContent = originalText;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+
 async function copyTransferPageLink(button, statusElement = null) {
   try {
     await navigator.clipboard.writeText(TRANSFER_PAGE_URL);
@@ -4230,6 +4567,7 @@ function renderEventTimeRanges(options = {}) {
   row.appendChild(createStartGroup());
   row.appendChild(createEndGroup());
   list.appendChild(row);
+  syncTrackingPlannedEndInput();
 }
 
 function formatCopyDate(date) {
@@ -5224,6 +5562,8 @@ document.getElementById('eventTypeSelect').addEventListener('change', () => {
   updateRealtimeEventTitle();
   updateEventDescription();
   renderEventTimeRanges({ resetEndTime: true });
+  trackingPlannedEndManuallyEdited = false;
+  syncTrackingPlannedEndInput(true);
   renderSignageMessages();
   updateRealtimeDeveloperMessage();
   updateSelectionStatus();
@@ -5254,10 +5594,14 @@ document.getElementById('eventCityInput').addEventListener('input', () => {
 
 document.getElementById('reportTimeInput').addEventListener('input', () => {
   renderEventTimeRanges({ resetEndTime: true });
+  trackingPlannedEndManuallyEdited = false;
+  syncTrackingPlannedEndInput(true);
 });
 
 document.getElementById('reportTimeInput').addEventListener('change', () => {
   renderEventTimeRanges({ resetEndTime: true });
+  trackingPlannedEndManuallyEdited = false;
+  syncTrackingPlannedEndInput(true);
 });
 
 document.getElementById('eventLocationInput').addEventListener('input', () => {
@@ -5299,6 +5643,31 @@ document.getElementById('copyEventDescriptionBtn').addEventListener('click', asy
     button.textContent = originalText;
   }, 1200);
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const plannedEndInput =
+    document.getElementById('trackingPlannedEndInput');
+
+  if (plannedEndInput) {
+    plannedEndInput.addEventListener('input', () => {
+      trackingPlannedEndManuallyEdited = true;
+    });
+  }
+
+  const sendButton =
+    document.getElementById('sendToTrackingBtn');
+
+  if (sendButton) {
+    sendButton.addEventListener(
+      'click',
+      sendCurrentEventToTracking
+    );
+  }
+
+  syncTrackingPlannedEndInput(true);
+});
+
 
 document.getElementById('eventDateInput').value = formatCurrentEventDate();
 updateRealtimeEventTitle();

@@ -481,12 +481,29 @@ function countdownText(record) {
           return bTime - aTime;
         }
 
-        const aTime =
-          parseDate(a.next_review_at)?.getTime() || 0;
-        const bTime =
-          parseDate(b.next_review_at)?.getTime() || 0;
+            const priorityOrder = {
+      overdue: 0,
+      warning: 1,
+      normal: 2
+    };
 
-        return aTime - bTime;
+    const aState = getEventVisualState(a);
+    const bState = getEventVisualState(b);
+    
+    const priorityDifference =
+      priorityOrder[aState] - priorityOrder[bState];
+    
+    if (priorityDifference !== 0) {
+      return priorityDifference;
+    }
+    
+    const aDeadline =
+      getEffectiveDeadline(a)?.getTime() || 0;
+    
+    const bDeadline =
+      getEffectiveDeadline(b)?.getTime() || 0;
+    
+    return aDeadline - bDeadline;
       });
   }
 

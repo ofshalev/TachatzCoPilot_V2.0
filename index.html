@@ -4667,10 +4667,16 @@ function updateRealtimeDeveloperMessage() {
   const eventType = getEffectiveEventType();
   const fullyCancelledStops = lastImpactResults.filter(isWholeStopSelected);
 
-  if (!eventType || !fullyCancelledStops.length) {
-    output.value = '';
-    return;
-  }
+  if (!eventType) {
+  output.value = '';
+  return;
+}
+
+if (!fullyCancelledStops.length) {
+  output.value =
+    'אין הודעות מפתחים באירוע זה';
+  return;
+}
 
   const header = fullyCancelledStops.length === 1
     ? `עקב ${eventType} התחנה הבאה מבוטלת זמנית:`

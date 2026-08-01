@@ -3854,6 +3854,7 @@ async function sendCurrentEventToTracking() {
       reviewIntervalMinutes * 60 * 1000
     ).toISOString(),
     planned_end_at: plannedEnd.toISOString(),
+    planned_end_manually_set: false,
     review_interval_minutes: reviewIntervalMinutes
   };
 

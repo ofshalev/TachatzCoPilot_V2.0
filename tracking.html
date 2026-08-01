@@ -868,10 +868,7 @@ function getDeadlineType(record) {
       Boolean(record.planned_end_manually_set)
   };
    
-    if (!record.planned_end_manually_set) {
-      values.planned_end_at =
-        newDeadline.toISOString();
-    }
+   
       await patchEvent(eventId, values);
       Object.assign(record, values);
 

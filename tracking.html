@@ -592,6 +592,15 @@ function countdownText(record) {
                 התקבל עדכון
               </button>
 
+            <button
+              type="button"
+              class="secondary"
+              data-action="set-end"
+              data-event-id="${escapeHtml(eventId)}"
+            >
+              קבע שעת סיום
+            </button>
+
               <button
                 type="button"
                 class="danger"
@@ -783,14 +792,20 @@ if (label) {
       getReviewIntervalMinutes(record);
 
     try {
-      const values = {
-        last_update_at: now.toISOString(),
-        next_review_at: new Date(
-          now.getTime() +
-          intervalMinutes * 60 * 1000
-        ).toISOString()
-      };
-
+          const newDeadline = new Date(
+      now.getTime() +
+      intervalMinutes * 60 * 1000
+    );
+    
+    const values = {
+      last_update_at: now.toISOString(),
+      next_review_at: newDeadline.toISOString()
+    };
+    
+    if (!record.planned_end_manually_set) {
+      values.planned_end_at =
+        newDeadline.toISOString();
+    }
       await patchEvent(eventId, values);
       Object.assign(record, values);
 
@@ -811,6 +826,70 @@ if (label) {
     }
   }
 
+async function setPlannedEnd(eventId) {
+  const record = eventsById[eventId];
+
+  if (!record || actionInProgress.has(eventId)) {
+    return;
+  }
+
+  const currentEnd = parseDate(record.planned_end_at);
+
+  const defaultValue = currentEnd
+    ? [
+        currentEnd.getFullYear(),
+        String(currentEnd.getMonth() + 1).padStart(2, '0'),
+        String(currentEnd.getDate()).padStart(2, '0')
+      ].join('-') +
+      'T' +
+      [
+        String(currentEnd.getHours()).padStart(2, '0'),
+        String(currentEnd.getMinutes()).padStart(2, '0')
+      ].join(':')
+    : '';
+
+  const value = prompt(
+    'הזן שעת סיום בפורמט YYYY-MM-DDTHH:MM',
+    defaultValue
+  );
+
+  if (!value) return;
+
+  const selectedEnd = new Date(value);
+
+  if (
+    Number.isNaN(selectedEnd.getTime()) ||
+    selectedEnd <= new Date()
+  ) {
+    alert('יש לבחור שעת סיום עתידית תקינה.');
+    return;
+  }
+
+  actionInProgress.add(eventId);
+  setActionButtonsDisabled(eventId, true);
+
+  try {
+    const values = {
+      planned_end_at: selectedEnd.toISOString(),
+      planned_end_manually_set: true
+    };
+
+    await patchEvent(eventId, values);
+    Object.assign(record, values);
+
+    el('readStatus').textContent =
+      'שעת הסיום עודכנה.';
+
+    render();
+  } catch (error) {
+    el('readStatus').textContent =
+      `לא ניתן לעדכן את שעת הסיום: ${error.message}`;
+  } finally {
+    actionInProgress.delete(eventId);
+    setActionButtonsDisabled(eventId, false);
+  }
+}
+  
   async function closeEvent(eventId) {
     const record = eventsById[eventId];
     if (!record || actionInProgress.has(eventId)) return;
@@ -845,6 +924,14 @@ if (label) {
   }
 
   function bindActionButtons() {
+  document
+    .querySelectorAll('[data-action="set-end"]')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        setPlannedEnd(button.dataset.eventId);
+      });
+    });
+      
     document
       .querySelectorAll('[data-action="updated"]')
       .forEach(button => {

@@ -845,19 +845,29 @@ function getDeadlineType(record) {
     const intervalMinutes =
       getReviewIntervalMinutes(record);
 
-    try {
-          const newDeadline = new Date(
-      now.getTime() +
-      intervalMinutes * 60 * 1000
-    );
-    
-    const values = {
-      last_update_at: now.toISOString(),
-      next_review_at: newDeadline.toISOString(),
-      planned_end_at: newDeadline.toISOString(),
-      planned_end_manually_set: false
-    };
-    
+ try {
+  const newDefaultDeadline = new Date(
+    now.getTime() +
+    intervalMinutes * 60 * 1000
+  );
+
+  const currentPlannedEnd =
+    parseDate(record.planned_end_at);
+
+  const selectedDeadline =
+    currentPlannedEnd &&
+    currentPlannedEnd > newDefaultDeadline
+      ? currentPlannedEnd
+      : newDefaultDeadline;
+
+  const values = {
+    last_update_at: now.toISOString(),
+    next_review_at: selectedDeadline.toISOString(),
+    planned_end_at: selectedDeadline.toISOString(),
+    planned_end_manually_set:
+      Boolean(record.planned_end_manually_set)
+  };
+   
     if (!record.planned_end_manually_set) {
       values.planned_end_at =
         newDeadline.toISOString();

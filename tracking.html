@@ -232,6 +232,12 @@
       font-weight: 700;
     }
 
+    .planned-end-note {
+      margin-top: 9px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
     .event-actions {
       display: flex;
       gap: 9px;
@@ -590,30 +596,36 @@ function countdownText(record) {
       ${
         record.status === 'closed'
           ? `
-            <div class="countdown-box">
-              <div class="countdown-label">האירוע נסגר</div>
-              <div style="font-weight:700;">
-                ${escapeHtml(formatIsraelDateTime(record.closed_at))}
-              </div>
+           <div class="countdown-box">
+            <div
+              class="countdown"
+              data-countdown-for="${escapeHtml(eventId)}"
+            >
+              ${escapeHtml(countdownText(record))}
             </div>
+          </div>
+          
+        
           `
           : `
             <div class="countdown-box">
-  <div
-  class="countdown-label"
-  data-countdown-label-for="${escapeHtml(eventId)}"
->
-    ${
-      getDeadlineType(record) === 'planned-end'
-      ? 'נותרו עד לסיום המשוער'
-      : 'נותרו עד לבדיקה'
-    }
-  </div>
+
 
   <div class="countdown" data-countdown-for="${escapeHtml(eventId)}">
     ${escapeHtml(countdownText(record))}
   </div>
 </div>
+
+  ${
+            record.planned_end_manually_set
+              ? `
+                <div class="planned-end-note">
+                  סיום משוער:
+                  ${escapeHtml(formatTimeInputValue(record.planned_end_at))}
+                </div>
+              `
+              : ''
+          }
 
             ${
               plannedEndPassed
@@ -697,8 +709,15 @@ function getReviewIntervalMinutes(record) {
 }
 
   function getEffectiveDeadline(record) {
-  const nextReview = parseDate(record.next_review_at);
-  const plannedEnd = parseDate(record.planned_end_at);
+  const nextReview =
+    parseDate(record.next_review_at);
+
+  const plannedEnd =
+    parseDate(record.planned_end_at);
+
+  if (record.planned_end_manually_set) {
+    return nextReview || plannedEnd;
+  }
 
   if (!nextReview) return plannedEnd;
   if (!plannedEnd) return nextReview;
@@ -793,16 +812,6 @@ function getDeadlineType(record) {
         card.classList.add(visualState);
 
         element.textContent = countdownText(record);
-        const label = document.querySelector(
-  `[data-countdown-label-for="${CSS.escape(eventId)}"]`
-);
-
-if (label) {
-  label.textContent =
-    getDeadlineType(record) === 'planned-end'
-      ? 'נותרו עד לסיום המשוער'
-      : 'נותרו עד לבדיקה';
-}
       });
 
     updateSummaryWithoutFullRender();

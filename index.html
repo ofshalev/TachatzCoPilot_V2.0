@@ -1346,7 +1346,7 @@
       </div>
 
       <div id="eventTimeRanges" style="margin-top:20px;">
-        <h3 style="margin:0 0 10px;">טווחי זמן להעתקה</h3>
+        <h3 style="margin:0 0 10px;">זמן האירוע</h3>
         <div id="eventTimeRangesList"></div>
       </div>
     </div>
@@ -1355,16 +1355,10 @@
 
   <section id="trackingSendSection" class="card">
     <h2 style="margin-top:0;">5. מעקב אחר האירוע</h2>
-    <p class="hint" style="margin-top:0;">
-      אירוע מסוג עבודות ייבדק כל שעתיים. כל אירוע אחר ייבדק בכל שעה.
-      שעת הסיום המשוערת ניתנת לעריכה ואינה משנה את תדירות הבדיקה.
-    </p>
+    
 
     <div class="tracking-send-layout">
-      <div class="field-group">
-        <label for="trackingPlannedEndInput">סיום משוער של האירוע</label>
-        <input id="trackingPlannedEndInput" type="datetime-local" />
-      </div>
+      
 
       <div class="tracking-send-actions">
         <button
@@ -3884,14 +3878,7 @@ async function sendCurrentEventToTracking() {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    setTrackingSendStatus(
-      `האירוע נשלח למעקב. הבדיקה הבאה בעוד ${
-        reviewIntervalMinutes === 120
-          ? 'שעתיים'
-          : 'שעה'
-      }.`,
-      'success'
-    );
+    setTrackingSendStatus('', '');
 
     button.textContent = 'נשלח למעקב';
 

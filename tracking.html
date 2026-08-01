@@ -238,6 +238,30 @@
       flex-wrap: wrap;
       margin-top: 14px;
     }
+    
+        .set-end-panel {
+      display: none;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+    
+    .set-end-panel.show {
+      display: flex;
+    }
+    
+    .set-end-panel input {
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font: inherit;
+    }
 
     .empty-state {
       padding: 35px 20px;
@@ -610,6 +634,56 @@ function countdownText(record) {
                 סגור אירוע
               </button>
             </div>
+
+          <div
+            class="set-end-panel"
+            data-set-end-panel="${escapeHtml(eventId)}"
+          >
+            <input
+              type="datetime-local"
+              data-set-end-input="${escapeHtml(eventId)}"
+              value="${
+                parseDate(record.planned_end_at)
+                  ? [
+                      parseDate(record.planned_end_at).getFullYear(),
+                      String(
+                        parseDate(record.planned_end_at).getMonth() + 1
+                      ).padStart(2, '0'),
+                      String(
+                        parseDate(record.planned_end_at).getDate()
+                      ).padStart(2, '0')
+                    ].join('-') +
+                    'T' +
+                    [
+                      String(
+                        parseDate(record.planned_end_at).getHours()
+                      ).padStart(2, '0'),
+                      String(
+                        parseDate(record.planned_end_at).getMinutes()
+                      ).padStart(2, '0')
+                    ].join(':')
+                  : ''
+              }"
+            />
+          
+            <button
+              type="button"
+              data-action="save-end"
+              data-event-id="${escapeHtml(eventId)}"
+            >
+              שמור
+            </button>
+          
+            <button
+              type="button"
+              class="secondary"
+              data-action="cancel-end"
+              data-event-id="${escapeHtml(eventId)}"
+            >
+              ביטול
+            </button>
+          </div>
+            
           `
       }
     `;
@@ -826,36 +900,30 @@ if (label) {
     }
   }
 
-async function setPlannedEnd(eventId) {
+function toggleSetEndPanel(eventId, show) {
+  const panel = document.querySelector(
+    `[data-set-end-panel="${CSS.escape(eventId)}"]`
+  );
+
+  if (!panel) return;
+
+  panel.classList.toggle('show', show);
+}
+
+async function savePlannedEnd(eventId) {
   const record = eventsById[eventId];
 
   if (!record || actionInProgress.has(eventId)) {
     return;
   }
 
-  const currentEnd = parseDate(record.planned_end_at);
-
-  const defaultValue = currentEnd
-    ? [
-        currentEnd.getFullYear(),
-        String(currentEnd.getMonth() + 1).padStart(2, '0'),
-        String(currentEnd.getDate()).padStart(2, '0')
-      ].join('-') +
-      'T' +
-      [
-        String(currentEnd.getHours()).padStart(2, '0'),
-        String(currentEnd.getMinutes()).padStart(2, '0')
-      ].join(':')
-    : '';
-
-  const value = prompt(
-    'הזן שעת סיום בפורמט YYYY-MM-DDTHH:MM',
-    defaultValue
+  const input = document.querySelector(
+    `[data-set-end-input="${CSS.escape(eventId)}"]`
   );
 
-  if (!value) return;
+  if (!input) return;
 
-  const selectedEnd = new Date(value);
+  const selectedEnd = new Date(input.value);
 
   if (
     Number.isNaN(selectedEnd.getTime()) ||
@@ -924,13 +992,35 @@ async function setPlannedEnd(eventId) {
   }
 
   function bindActionButtons() {
-  document
-    .querySelectorAll('[data-action="set-end"]')
-    .forEach(button => {
-      button.addEventListener('click', () => {
-        setPlannedEnd(button.dataset.eventId);
+    document
+      .querySelectorAll('[data-action="set-end"]')
+      .forEach(button => {
+        button.addEventListener('click', () => {
+          toggleSetEndPanel(
+            button.dataset.eventId,
+            true
+          );
+        });
       });
-    });
+    
+    document
+      .querySelectorAll('[data-action="save-end"]')
+      .forEach(button => {
+        button.addEventListener('click', () => {
+          savePlannedEnd(button.dataset.eventId);
+        });
+      });
+    
+    document
+      .querySelectorAll('[data-action="cancel-end"]')
+      .forEach(button => {
+        button.addEventListener('click', () => {
+          toggleSetEndPanel(
+            button.dataset.eventId,
+            false
+          );
+        });
+      });
       
     document
       .querySelectorAll('[data-action="updated"]')

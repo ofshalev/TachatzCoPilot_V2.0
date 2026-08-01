@@ -961,6 +961,18 @@
   }
 }
 
+  .no-action-message {
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: right;
+}
+
   </style>
 </head>
 <body>
@@ -4170,17 +4182,29 @@ function renderSignageMessages() {
       result.has_sign === 'כן'
   );
 
+  const hasAnySelectedImpact =
+    lastImpactResults.some(
+      result =>
+        Number(result.affected_count || 0) > 0
+    );
+  
   if (!eventType) {
     container.innerHTML =
       '<div class="hint">בחר סוג אירוע כדי ליצור הודעות שילוט.</div>';
     return;
   }
 
-  if (!selectedResults.length) {
-    container.innerHTML =
-      '<div class="hint">לא נמצאו תחנות מסומנות עם שילוט קיים.</div>';
-    return;
-  }
+ if (!selectedResults.length) {
+  container.innerHTML = hasAnySelectedImpact
+    ? `
+      <div class="no-action-message">
+        אין שילוט באירוע זה
+      </div>
+    `
+    : '<div class="hint">בחר קווים בתחנות כדי ליצור הודעות שילוט.</div>';
+
+  return;
+}
 
   const groups = new Map();
 
@@ -5394,7 +5418,14 @@ document.getElementById('impactBtn').addEventListener('click', async () => {
   state.eventTiming = '';
   state.realtimeSelections = new Map();
   lastImpactResults = [];
-  document.getElementById('appsMessageOutput').value = '';
+  document.getElementById('appsMessageOutput').value =
+  'אין עדכון מפתחים באירוע זה';
+  document.getElementById(
+  'sendDeveloperStopsBtn'
+  ).disabled = true;
+  document.getElementById(
+    'copyDeveloperTransferLinkBtn'
+  ).disabled = true;
   document.getElementById('selectionStatus').textContent = 'טרם נבחרו ביטולים.';
 
   if (!state.raw) {

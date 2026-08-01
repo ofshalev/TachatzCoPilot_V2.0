@@ -184,32 +184,6 @@
       white-space: nowrap;
     }
 
-    .event-meta {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(145px, 1fr));
-      gap: 10px;
-      margin-top: 13px;
-    }
-
-    .meta-box {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #f8fafc;
-      padding: 10px 12px;
-    }
-
-    .meta-box span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .meta-box strong {
-      display: block;
-      overflow-wrap: anywhere;
-    }
-
     .countdown-box {
       margin-top: 13px;
       padding: 13px 14px;
@@ -293,6 +267,24 @@
       .event-actions { flex-direction: column; }
       .event-actions button { width: 100%; }
     }
+  
+  .operator-logo-badge {
+    min-width: 74px;
+    min-height: 38px;
+    padding: 5px 10px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+  }
+  
+  .operator-logo-badge img {
+    display: block;
+    width: 100%;
+    max-width: 82px;
+    height: 28px;
+    object-fit: contain;
+  }
+
+    
   </style>
 </head>
 <body>
@@ -358,6 +350,15 @@
   const AUTO_REFRESH_MS = 5000;
   const COUNTDOWN_REFRESH_MS = 1000;
   const WARNING_WINDOW_MS = 10 * 60 * 1000;
+
+  const OPERATOR_LOGOS = {
+    'אגד': 'logos/egged.jpg',
+    'אפיקים': 'logos/afikim.png',
+    'דן': 'logos/dan.png',
+    'מטרופולין': 'logos/metropoline.svg',
+    'סופרבוס': 'logos/superbus.png',
+    'קווים': 'logos/kavim.svg'
+  };
 
   let eventsById = {};
   let showClosed = false;
@@ -450,10 +451,8 @@ function countdownText(record) {
     effectiveDeadline.getTime() - Date.now();
 
   if (remaining <= 0) {
-    return deadlineType === 'planned-end'
-      ? `איחור ${formatDuration(remaining)}`
-      : `איחור ${formatDuration(remaining)}`;
-  }
+  return formatDuration(remaining);
+}
 
   return formatDuration(remaining);
 }
@@ -520,33 +519,33 @@ function countdownText(record) {
       record.status !== 'closed' &&
       plannedEnd &&
       plannedEnd.getTime() <= Date.now();
+    
+    const operatorLogo =
+      OPERATOR_LOGOS[record.operator] || '';
+    
+    const operatorDisplay = operatorLogo
+      ? `
+        <span
+          class="operator-badge operator-logo-badge"
+          title="${escapeHtml(record.operator || '')}"
+        >
+          <img
+            src="${escapeHtml(operatorLogo)}"
+            alt="${escapeHtml(record.operator || '')}"
+          />
+        </span>
+      `
+      : `
+        <span class="operator-badge">
+          ${escapeHtml(record.operator || 'לא צוין')}
+        </span>
+      `;
 
+    
     card.innerHTML = `
       <div class="event-card-header">
         <h2 class="event-title">${escapeHtml(record.title || 'ללא כותרת')}</h2>
-        <span class="operator-badge">${escapeHtml(record.operator || 'לא צוין')}</span>
-      </div>
-
-      <div class="event-meta">
-        <div class="meta-box">
-          <span>סוג אירוע</span>
-          <strong>${escapeHtml(record.event_type || 'לא צוין')}</strong>
-        </div>
-
-        <div class="meta-box">
-          <span>מועד דיווח</span>
-          <strong>${escapeHtml(formatIsraelDateTime(record.created_at))}</strong>
-        </div>
-
-        <div class="meta-box">
-          <span>בדיקה הבאה</span>
-          <strong>${escapeHtml(formatIsraelDateTime(record.next_review_at))}</strong>
-        </div>
-
-        <div class="meta-box">
-          <span>סיום משוער</span>
-          <strong>${escapeHtml(formatIsraelDateTime(record.planned_end_at))}</strong>
-        </div>
+        ${operatorDisplay}
       </div>
 
       ${

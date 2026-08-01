@@ -589,98 +589,98 @@ function countdownText(record) {
         ${operatorDisplay}
       </div>
 
+${
+  record.status === 'closed'
+    ? `
+      <div class="countdown-box">
+        <div class="countdown-label">האירוע נסגר</div>
+
+        <div style="font-weight:700;">
+          ${escapeHtml(
+            formatIsraelDateTime(record.closed_at)
+          )}
+        </div>
+      </div>
+    `
+    : `
+      <div class="countdown-box">
+        <div
+          class="countdown"
+          data-countdown-for="${escapeHtml(eventId)}"
+        >
+          ${escapeHtml(countdownText(record))}
+        </div>
+      </div>
+
       ${
-        record.status === 'closed'
+        plannedEndPassed
           ? `
-           <div class="countdown-box">
-            <div
-              class="countdown"
-              data-countdown-for="${escapeHtml(eventId)}"
-            >
-              ${escapeHtml(countdownText(record))}
+            <div class="planned-end-warning">
+              האירוע עבר את שעת הסיום המשוערת.
             </div>
-          </div>
-          
-        
           `
-          : `
-            <div class="countdown-box">
-
-
-  <div class="countdown" data-countdown-for="${escapeHtml(eventId)}">
-    ${escapeHtml(countdownText(record))}
-  </div>
-</div>
-
-  ${
-         
-
-            ${
-              plannedEndPassed
-                ? '<div class="planned-end-warning">האירוע עבר את שעת הסיום המשוערת.</div>'
-                : ''
-            }
-
-            <div class="event-actions">
-              <button
-                type="button"
-                class="success"
-                data-action="updated"
-                data-event-id="${escapeHtml(eventId)}"
-              >
-                התקבל עדכון
-              </button>
-
-            <button
-              type="button"
-              class="secondary"
-              data-action="set-end"
-              data-event-id="${escapeHtml(eventId)}"
-            >
-              קבע שעת סיום
-            </button>
-
-              <button
-                type="button"
-                class="danger"
-                data-action="close"
-                data-event-id="${escapeHtml(eventId)}"
-              >
-                סגור אירוע
-              </button>
-            </div>
-
-          <div
-            class="set-end-panel"
-            data-set-end-panel="${escapeHtml(eventId)}"
-          >
-            <input
-              type="time"
-              class="planned-end-time-input"
-              data-set-end-input="${escapeHtml(eventId)}"
-              value="${formatTimeInputValue(record.planned_end_at)}"
-            />
-          
-            <button
-              type="button"
-              data-action="save-end"
-              data-event-id="${escapeHtml(eventId)}"
-            >
-              שמור
-            </button>
-          
-            <button
-              type="button"
-              class="secondary"
-              data-action="cancel-end"
-              data-event-id="${escapeHtml(eventId)}"
-            >
-              ביטול
-            </button>
-          </div>
-            
-          `
+          : ''
       }
+
+      <div class="event-actions">
+        <button
+          type="button"
+          class="success"
+          data-action="updated"
+          data-event-id="${escapeHtml(eventId)}"
+        >
+          התקבל עדכון
+        </button>
+
+        <button
+          type="button"
+          class="secondary"
+          data-action="set-end"
+          data-event-id="${escapeHtml(eventId)}"
+        >
+          קבע שעת סיום
+        </button>
+
+        <button
+          type="button"
+          class="danger"
+          data-action="close"
+          data-event-id="${escapeHtml(eventId)}"
+        >
+          סגור אירוע
+        </button>
+      </div>
+
+      <div
+        class="set-end-panel"
+        data-set-end-panel="${escapeHtml(eventId)}"
+      >
+        <input
+          type="time"
+          class="planned-end-time-input"
+          data-set-end-input="${escapeHtml(eventId)}"
+          value="${formatTimeInputValue(record.planned_end_at)}"
+        />
+
+        <button
+          type="button"
+          data-action="save-end"
+          data-event-id="${escapeHtml(eventId)}"
+        >
+          שמור
+        </button>
+
+        <button
+          type="button"
+          class="secondary"
+          data-action="cancel-end"
+          data-event-id="${escapeHtml(eventId)}"
+        >
+          ביטול
+        </button>
+      </div>
+    `
+}
     `;
 
     return card;

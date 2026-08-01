@@ -232,11 +232,7 @@
       font-weight: 700;
     }
 
-    .planned-end-note {
-      margin-top: 9px;
-      color: var(--muted);
-      font-weight: 700;
-    }
+
 
     .event-actions {
       display: flex;
@@ -617,15 +613,7 @@ function countdownText(record) {
 </div>
 
   ${
-            record.planned_end_manually_set
-              ? `
-                <div class="planned-end-note">
-                  סיום משוער:
-                  ${escapeHtml(formatTimeInputValue(record.planned_end_at))}
-                </div>
-              `
-              : ''
-          }
+         
 
             ${
               plannedEndPassed
@@ -709,25 +697,13 @@ function getReviewIntervalMinutes(record) {
 }
 
   function getEffectiveDeadline(record) {
-  const nextReview =
-    parseDate(record.next_review_at);
-
   const plannedEnd =
     parseDate(record.planned_end_at);
 
-  if (record.planned_end_manually_set) {
-    return nextReview || plannedEnd;
-  }
+  const nextReview =
+    parseDate(record.next_review_at);
 
-  if (!nextReview) return plannedEnd;
-  if (!plannedEnd) return nextReview;
-
-  return new Date(
-    Math.min(
-      nextReview.getTime(),
-      plannedEnd.getTime()
-    )
-  );
+  return plannedEnd || nextReview;
 }
 
 function getDeadlineType(record) {
@@ -877,7 +853,9 @@ function getDeadlineType(record) {
     
     const values = {
       last_update_at: now.toISOString(),
-      next_review_at: newDeadline.toISOString()
+      next_review_at: newDeadline.toISOString(),
+      planned_end_at: newDeadline.toISOString(),
+      planned_end_manually_set: false
     };
     
     if (!record.planned_end_manually_set) {

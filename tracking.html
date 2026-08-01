@@ -417,6 +417,20 @@
     }).format(date);
   }
 
+function formatTimeInputValue(value) {
+  const date = parseDate(value);
+
+  if (!date) {
+    return '';
+  }
+
+  return (
+    String(date.getHours()).padStart(2, '0') +
+    ':' +
+    String(date.getMinutes()).padStart(2, '0')
+  );
+}
+  
   function getReviewIntervalMinutes(record) {
     const stored = Number(record.review_interval_minutes);
 
@@ -640,30 +654,10 @@ function countdownText(record) {
             data-set-end-panel="${escapeHtml(eventId)}"
           >
             <input
-              type="datetime-local"
+              type="time"
+              class="planned-end-time-input"
               data-set-end-input="${escapeHtml(eventId)}"
-              value="${
-                parseDate(record.planned_end_at)
-                  ? [
-                      parseDate(record.planned_end_at).getFullYear(),
-                      String(
-                        parseDate(record.planned_end_at).getMonth() + 1
-                      ).padStart(2, '0'),
-                      String(
-                        parseDate(record.planned_end_at).getDate()
-                      ).padStart(2, '0')
-                    ].join('-') +
-                    'T' +
-                    [
-                      String(
-                        parseDate(record.planned_end_at).getHours()
-                      ).padStart(2, '0'),
-                      String(
-                        parseDate(record.planned_end_at).getMinutes()
-                      ).padStart(2, '0')
-                    ].join(':')
-                  : ''
-              }"
+              value="${formatTimeInputValue(record.planned_end_at)}"
             />
           
             <button
@@ -923,15 +917,25 @@ async function savePlannedEnd(eventId) {
 
   if (!input) return;
 
-  const selectedEnd = new Date(input.value);
+  const [hours, minutes] =
+  input.value.split(':').map(Number);
 
-  if (
-    Number.isNaN(selectedEnd.getTime()) ||
-    selectedEnd <= new Date()
-  ) {
-    alert('יש לבחור שעת סיום עתידית תקינה.');
-    return;
-  }
+const selectedEnd = new Date();
+
+selectedEnd.setHours(
+  hours,
+  minutes,
+  0,
+  0
+);
+
+// If the selected time has already passed today,
+// assume the operator means tomorrow.
+if (selectedEnd <= new Date()) {
+  selectedEnd.setDate(
+    selectedEnd.getDate() + 1
+  );
+}
 
   actionInProgress.add(eventId);
   setActionButtonsDisabled(eventId, true);
@@ -991,6 +995,41 @@ async function savePlannedEnd(eventId) {
     }
   }
 
+
+function enablePlannedEndWheel(input) {
+  input.addEventListener(
+    'wheel',
+    event => {
+      event.preventDefault();
+
+      const value = input.value || '00:00';
+      let [hours, minutes] = value
+        .split(':')
+        .map(Number);
+
+      let totalMinutes = hours * 60 + minutes;
+
+      // Shift = hours, normal wheel = minutes
+      const step = event.shiftKey ? 60 : 1;
+
+      totalMinutes +=
+        event.deltaY < 0 ? step : -step;
+
+      totalMinutes =
+        (totalMinutes + 1440) % 1440;
+
+      hours = Math.floor(totalMinutes / 60);
+      minutes = totalMinutes % 60;
+
+      input.value =
+        String(hours).padStart(2, '0') +
+        ':' +
+        String(minutes).padStart(2, '0');
+    },
+    { passive: false }
+  );
+}
+  
   function bindActionButtons() {
     document
       .querySelectorAll('[data-action="set-end"]')
@@ -1037,6 +1076,12 @@ async function savePlannedEnd(eventId) {
           closeEvent(button.dataset.eventId);
         });
       });
+
+    document
+  .querySelectorAll('.planned-end-time-input')
+  .forEach(input => {
+    enablePlannedEndWheel(input);
+  });
   }
 
   async function loadEvents(showLoading = false) {

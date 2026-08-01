@@ -387,6 +387,7 @@
   let eventsById = {};
   let showClosed = false;
   let actionInProgress = new Set();
+  let openSetEndEventId = null;
 
   const el = id => document.getElementById(id);
 
@@ -895,13 +896,23 @@ if (label) {
   }
 
 function toggleSetEndPanel(eventId, show) {
+  openSetEndEventId = show ? eventId : null;
+
+  document
+    .querySelectorAll('.set-end-panel')
+    .forEach(panel => panel.classList.remove('show'));
+
+  if (!show) {
+    return;
+  }
+
   const panel = document.querySelector(
     `[data-set-end-panel="${CSS.escape(eventId)}"]`
   );
 
-  if (!panel) return;
-
-  panel.classList.toggle('show', show);
+  if (panel) {
+    panel.classList.add('show');
+  }
 }
 
 async function savePlannedEnd(eventId) {
@@ -1151,7 +1162,15 @@ function enablePlannedEndWheel(input) {
   );
 
   loadEvents(true);
-  setInterval(() => loadEvents(false), AUTO_REFRESH_MS);
+  setInterval(() => {
+  // Don't rebuild the cards while the operator
+  // is editing a planned end time.
+  if (openSetEndEventId) {
+    return;
+  }
+
+    loadEvents(false);
+  }, AUTO_REFRESH_MS);
   setInterval(updateCountdowns, COUNTDOWN_REFRESH_MS);
 </script>
 </body>

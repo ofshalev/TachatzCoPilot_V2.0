@@ -3778,16 +3778,11 @@ async function sendCurrentEventToTracking() {
 
   const eventType = getEffectiveEventType();
 
-  const plannedEndInput =
-    document.getElementById(
-      'trackingPlannedEndInput'
-    );
-
-  const plannedEnd =
-    parseDateTimeLocalValue(
-      plannedEndInput ? plannedEndInput.value : ''
-    );
-
+const plannedEnd =
+  parseDateTimeLocalValue(
+    state.realtimeEndDateTime
+  );
+  
   if (!title || title.split(',').length < 4) {
     setTrackingSendStatus(
       'יש להשלים כותרת אירוע מלאה הכוללת ארבעה חלקים.',
@@ -3812,13 +3807,13 @@ async function sendCurrentEventToTracking() {
     return;
   }
 
-  if (!plannedEnd) {
-    setTrackingSendStatus(
-      'יש לבחור שעת סיום משוערת.',
-      'error'
-    );
-    return;
-  }
+ if (!plannedEnd) {
+  setTrackingSendStatus(
+    'לא הוגדר זמן סיום לאירוע.',
+    'error'
+  );
+  return;
+}
 
   const now = new Date();
 

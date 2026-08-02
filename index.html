@@ -584,11 +584,11 @@
 
   .event-details-layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 220px;
   grid-template-areas:
-    "time operator"
-    "locations event-type"
-    "response verification";
+    "operator time"
+    "event-type locations"
+    "verification response";
   column-gap: 28px;
   row-gap: 22px;
   align-items: start;

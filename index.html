@@ -1795,6 +1795,11 @@ function updateDeveloperSequenceHighlight(currentIndex) {
   );
 
   if (!message.running) {
+    if (extensionStatusTimer) {
+      clearInterval(extensionStatusTimer);
+      extensionStatusTimer = null;
+    }
+
     setTimeout(() => {
       clearDeveloperSequenceHighlights();
     }, 3000);

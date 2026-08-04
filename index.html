@@ -1852,9 +1852,40 @@ function updateDeveloperSequenceHighlight(currentIndex) {
   }
 
   setTimeout(() => {
-    clearDeveloperSequenceHighlights();
+  clearDeveloperSequenceHighlights();
 
-    highlightDeveloperManualSelections();
+  const manualSteps = [
+    document
+      .getElementById('developerChangeImpact')
+      ?.closest('.developer-selection-box'),
+
+    document
+      .getElementById('developerChangeReason')
+      ?.closest('.developer-selection-box'),
+
+    document.getElementById('eventDistrictBox')
+  ].filter(Boolean);
+
+  let currentManualStep = 0;
+
+  function showNextManualStep() {
+    clearDeveloperSelectionHighlights();
+
+    if (currentManualStep < manualSteps.length) {
+      const box = manualSteps[currentManualStep];
+
+      box.style.outline =
+        '2px solid var(--accent, #2563eb)';
+      box.style.background = '#eff6ff';
+      box.style.borderRadius = '8px';
+
+      currentManualStep += 1;
+
+      setTimeout(showNextManualStep, 3000);
+      return;
+    }
+
+    clearDeveloperSelectionHighlights();
 
     const sendStopsButton =
       document.getElementById('sendDeveloperStopsBtn');
@@ -1862,7 +1893,10 @@ function updateDeveloperSequenceHighlight(currentIndex) {
     if (sendStopsButton && !sendStopsButton.disabled) {
       sendStopsButton.click();
     }
-  }, 3000);
+  }
+
+  showNextManualStep();
+}, 3000);
 }
 }
 

@@ -5527,6 +5527,20 @@ function getDeveloperSequenceItems() {
   return 'סיבה אחרת';
 }
 
+
+  function sendToTachatzCopierExtension(type, payload = {}) {
+  window.postMessage(
+    {
+      source: 'tachatz-copilot-page',
+      type,
+      ...payload
+    },
+    window.location.origin
+  );
+}
+
+
+  
 function initializeLocationTypeButtons() {
   const primaryTypeInput =
     document.getElementById('primaryLocationType');
@@ -5548,17 +5562,6 @@ function initializeLocationTypeButtons() {
   ) {
     return;
   }
-
-  function sendToTachatzCopierExtension(type, payload = {}) {
-  window.postMessage(
-    {
-      source: 'tachatz-copilot-page',
-      type,
-      ...payload
-    },
-    window.location.origin
-  );
-}
 
   function renderSecondaryButtons(primaryType) {
     secondaryButtonsContainer.innerHTML = '';

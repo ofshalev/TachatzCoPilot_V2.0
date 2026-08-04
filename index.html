@@ -993,6 +993,33 @@
 .event-district-box strong {
   font-size: 16px;
 }
+
+    .developer-date-range-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.developer-date-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.developer-date-item input {
+  width: 190px;
+  box-sizing: border-box;
+  direction: ltr;
+  text-align: center;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.developer-date-label {
+  white-space: nowrap;
+}
     
   </style>
 </head>
@@ -1434,29 +1461,49 @@
   </div>
 
 
-  <!-- תאריכים ושעות -->
-
   <div class="field" style="margin-top:14px;">
-    <label for="developerDatesOutput">
-      תאריכים ושעות
-    </label>
+  <label style="display:block; margin-bottom:8px;">
+    תאריכים ושעות
+  </label>
 
-    <textarea
-      id="developerDatesOutput"
-      rows="3"
-      readonly
-      placeholder="תאריכי האירוע ושעותיו יופיעו כאן"
-      style="
-        width:100%;
-        box-sizing:border-box;
-        direction:rtl;
-        text-align:right;
-        font-family:Arial, Helvetica, sans-serif;
-        font-size:15px;
-        line-height:1.6;
-      "
-    ></textarea>
+  <div class="developer-date-range-row">
+    <div class="developer-date-item">
+      <span class="developer-date-label">התחלה:</span>
+
+      <input
+        id="developerStartDateTimeOutput"
+        type="text"
+        readonly
+      />
+
+      <button
+        id="copyDeveloperStartDateTimeBtn"
+        type="button"
+        class="secondary"
+      >
+        העתק
+      </button>
+    </div>
+
+    <div class="developer-date-item">
+      <span class="developer-date-label">סיום:</span>
+
+      <input
+        id="developerEndDateTimeOutput"
+        type="text"
+        readonly
+      />
+
+      <button
+        id="copyDeveloperEndDateTimeBtn"
+        type="button"
+        class="secondary"
+      >
+        העתק
+      </button>
+    </div>
   </div>
+</div>
 
 
   <!-- ההעתקה הרציפה נעצרת לאחר התאריכים -->

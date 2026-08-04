@@ -1734,6 +1734,77 @@ function buildRealtimeRows(text) {
   }));
 }
 
+
+function clearDeveloperSequenceHighlights() {
+  [
+    'developerTitleOutput',
+    'appsMessageOutput',
+    'developerStartDateTimeOutput',
+    'developerEndDateTimeOutput'
+  ].forEach(id => {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    element.style.outline = '';
+    element.style.background = '';
+    element.style.borderRadius = '';
+  });
+}
+
+function updateDeveloperSequenceHighlight(currentIndex) {
+  clearDeveloperSequenceHighlights();
+
+  const elementIds = [
+    'developerTitleOutput',
+    'appsMessageOutput',
+    'developerStartDateTimeOutput',
+    'developerEndDateTimeOutput'
+  ];
+
+  const copiedIndex = Number(currentIndex) - 1;
+  const element =
+    document.getElementById(elementIds[copiedIndex]);
+
+  if (!element) return;
+
+  element.style.outline =
+    '2px solid var(--accent, #2563eb)';
+  element.style.background = '#eff6ff';
+  element.style.borderRadius = '8px';
+}
+
+  window.addEventListener('message', event => {
+  if (event.source !== window) return;
+  if (event.origin !== window.location.origin) return;
+
+  const message = event.data;
+
+  if (
+    !message ||
+    message.source !== 'tachatz-copilot-extension'
+  ) {
+    return;
+  }
+
+  if (message.type === 'SEQUENCE_STATUS' && message.ok) {
+    updateDeveloperSequenceHighlight(
+      message.currentIndex
+    );
+
+    if (!message.running) {
+      clearDeveloperSequenceHighlights();
+    }
+  }
+
+  if (
+    message.type === 'SEQUENCE_STOPPED' ||
+    message.type === 'EXTENSION_ERROR'
+  ) {
+    clearDeveloperSequenceHighlights();
+  }
+});
+
 function normalizeRouteToken(token) {
   let t = String(token || '').replace(/\s+/g, '').trim();
   // Common extraction mistake in Hebrew: the ל from "לכיוון" sticks to the route number, e.g. 84ל / 85ל / 98ל.

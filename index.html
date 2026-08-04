@@ -973,6 +973,27 @@
   text-align: right;
 }
 
+.developer-selection-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  padding: 12px 14px;
+  border: 1px solid #cfd6e2;
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.developer-selection-label {
+  font-weight: 600;
+}
+
+.developer-selection-box strong,
+.event-district-box strong {
+  font-size: 16px;
+}
+    
   </style>
 </head>
 <body>
@@ -1314,44 +1335,230 @@
   </section>
 
   <section id="messagesSection" class="card">
-    <h2 style="margin-top:0;">4. הודעה לשילוט ולמפתחים</h2>
+  <div class="developer-message-panel">
 
-    <div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <h3 style="margin:0;">הודעה למפתחים</h3>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;"><button id="sendDeveloperStopsBtn" type="button" class="secondary" disabled>שלח למחשב המרוחק</button><button id="copyTransferLinkBtn" type="button" class="secondary">העתק קישור למחשב המרוחק</button><button id="copyAppsMessageBtn" type="button">העתק</button></div>
-      </div>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    "
+  >
+    <h3 style="margin:0;">הודעה למפתחים</h3>
 
-<div
-  id="eventDistrictBox"
-  class="event-district-box"
-  style="display:none"
->
-  <span class="event-district-label">
-    מחוז משרד התחבורה:
-  </span>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button
+        id="startDeveloperSequenceBtn"
+        type="button"
+        disabled
+      >
+        התחל העתקה רציפה
+      </button>
 
-  <strong id="eventDistrict"></strong>
+      <button
+        id="stopDeveloperSequenceBtn"
+        type="button"
+        class="secondary"
+        disabled
+      >
+        עצור
+      </button>
+    </div>
+  </div>
+
+
+  <!-- כותרת -->
+
+  <div class="field">
+    <label for="developerTitleOutput">
+      כותרת
+    </label>
+
+    <input
+      id="developerTitleOutput"
+      type="text"
+      readonly
+      placeholder="כותרת האירוע תופיע כאן"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        direction:rtl;
+        text-align:right;
+      "
+    />
+  </div>
+
+
+  <!-- תוכן -->
+
+  <div class="field" style="margin-top:14px;">
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:8px;
+        margin-bottom:6px;
+      "
+    >
+      <label for="appsMessageOutput" style="margin:0;">
+        תוכן
+      </label>
+
+      <button
+        id="copyAppsMessageBtn"
+        type="button"
+        class="secondary"
+      >
+        העתק תוכן
+      </button>
+    </div>
+
+    <textarea
+      id="appsMessageOutput"
+      rows="8"
+      readonly
+      style="
+        width:100%;
+        box-sizing:border-box;
+        direction:rtl;
+        text-align:right;
+        font-family:Arial, Helvetica, sans-serif;
+        font-size:15px;
+        line-height:1.6;
+      "
+    ></textarea>
+  </div>
+
+
+  <!-- תאריכים ושעות -->
+
+  <div class="field" style="margin-top:14px;">
+    <label for="developerDatesOutput">
+      תאריכים ושעות
+    </label>
+
+    <textarea
+      id="developerDatesOutput"
+      rows="3"
+      readonly
+      placeholder="תאריכי האירוע ושעותיו יופיעו כאן"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        direction:rtl;
+        text-align:right;
+        font-family:Arial, Helvetica, sans-serif;
+        font-size:15px;
+        line-height:1.6;
+      "
+    ></textarea>
+  </div>
+
+
+  <!-- ההעתקה הרציפה נעצרת לאחר התאריכים -->
+
+  <div
+    class="hint"
+    style="
+      margin-top:8px;
+      padding-bottom:16px;
+      border-bottom:1px solid #d8dde6;
+    "
+  >
+    ההעתקה הרציפה תסתיים לאחר העתקת התאריך והשעה האחרונים.
+  </div>
+
+
+  <!-- בחירות ידניות במערכת משרד התחבורה -->
+
+  <div style="margin-top:18px;">
+    <h4 style="margin:0 0 12px;">
+      בחירות במערכת משרד התחבורה
+    </h4>
+
+
+    <div class="developer-selection-box">
+      <span class="developer-selection-label">
+        השפעת השינוי
+      </span>
+
+      <strong id="developerChangeImpact">
+        שינוי מסלול
+      </strong>
+    </div>
+
+
+    <div
+      class="developer-selection-box"
+      style="margin-top:10px;"
+    >
+      <span class="developer-selection-label">
+        סיבת השינוי
+      </span>
+
+      <strong id="developerChangeReason">
+        —
+      </strong>
+    </div>
+
+
+    <div
+      id="eventDistrictBox"
+      class="event-district-box"
+      style="display:none; margin-top:10px;"
+    >
+      <span class="event-district-label">
+        מחוז משרד התחבורה
+      </span>
+
+      <strong id="eventDistrict"></strong>
+    </div>
+  </div>
+
+
+  <!-- העברת התחנות למחשב המרוחק -->
+
+  <div
+    style="
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:18px;
+      padding-top:16px;
+      border-top:1px solid #d8dde6;
+    "
+  >
+    <button
+      id="sendDeveloperStopsBtn"
+      type="button"
+      class="secondary"
+      disabled
+    >
+      שלח תחנות למחשב המרוחק
+    </button>
+
+    <button
+      id="copyTransferLinkBtn"
+      type="button"
+      class="secondary"
+    >
+      העתק קישור למחשב המרוחק
+    </button>
+  </div>
+
+
+  <div
+    id="developerTransferStatus"
+    class="hint"
+    style="margin-top:8px;"
+  ></div>
+
 </div>
-
-      
-      <textarea
-        id="appsMessageOutput"
-        rows="8"
-        readonly
-        style="
-          width:100%;
-          box-sizing:border-box;
-          direction:rtl;
-          text-align:right;
-          font-family:Arial, Helvetica, sans-serif;
-          font-size:15px;
-          line-height:1.6;
-        "
-      ></textarea>
-
-      <div id="developerTransferStatus" class="hint" style="margin-top:8px;"></div>
-
+    
       <div id="signageSection" class="signage-section">
         <h3 style="margin:0;">הודעות לשילוט</h3>
         <div id="signageMessagesList"></div>
@@ -3094,7 +3301,72 @@ const formattedLocation =
 
   document.getElementById('eventTitleBox').style.display = 'block';
   document.getElementById('eventTitle').value = state.eventTitle;
+
+  updateDeveloperAutomationFields();
 }
+
+  function updateDeveloperAutomationFields() {
+  const titleOutput =
+    document.getElementById('developerTitleOutput');
+
+  const datesOutput =
+    document.getElementById('developerDatesOutput');
+
+  const changeReason =
+    document.getElementById('developerChangeReason');
+
+  const eventDate =
+    cleanText(
+      document.getElementById('eventDateInput')?.value || ''
+    );
+
+  const eventType = getEffectiveEventType();
+
+  if (titleOutput) {
+    titleOutput.value = state.eventTitle || '';
+  }
+
+  if (datesOutput) {
+    datesOutput.value = eventDate;
+  }
+
+  if (changeReason) {
+    changeReason.textContent =
+      getDeveloperChangeReason(eventType);
+  }
+}
+
+  function getDeveloperChangeReason(eventType) {
+  const normalizedType = cleanText(eventType);
+
+  if (normalizedType === 'תאונה') {
+    return 'תאונת דרכים';
+  }
+
+  if (normalizedType === 'הפגנה') {
+    return 'הפגנה';
+  }
+
+  if (
+    normalizedType === 'הלוויה' ||
+    normalizedType === 'חתונה' ||
+    normalizedType === 'טקס'
+  ) {
+    return 'חג או מועד';
+  }
+
+  if (normalizedType === 'עבודות') {
+    return 'עבודות בכביש';
+  }
+
+  if (normalizedType === 'חסימה משטרתית') {
+    return 'פעילות משטרתית או בטחונית';
+  }
+
+  return 'סיבה אחרת';
+}
+  
+
   
 function getSelectedEventVerifications() {
   return [...document.querySelectorAll(
@@ -5106,6 +5378,65 @@ document.addEventListener('DOMContentLoaded', () => {
   enableTimeWheelControl();
 });
 
+  function updateDeveloperAutomationFields() {
+  const developerTitleOutput =
+    document.getElementById('developerTitleOutput');
+
+  const developerDatesOutput =
+    document.getElementById('developerDatesOutput');
+
+  const developerChangeReason =
+    document.getElementById('developerChangeReason');
+
+  const eventTitle =
+    document.getElementById('eventTitle')?.value.trim() || '';
+
+  const eventType = getEffectiveEventType();
+
+  if (developerTitleOutput) {
+    developerTitleOutput.value = eventTitle;
+  }
+
+  if (developerChangeReason) {
+    developerChangeReason.textContent =
+      getDeveloperChangeReason(eventType);
+  }
+
+  if (developerDatesOutput) {
+    developerDatesOutput.value =
+      buildDeveloperDateText();
+  }
+}
+
+ function getDeveloperChangeReason(eventType) {
+  const normalizedType = cleanText(eventType);
+
+  if (normalizedType === 'תאונה') {
+    return 'תאונת דרכים';
+  }
+
+  if (normalizedType === 'הפגנה') {
+    return 'הפגנה';
+  }
+
+  if (
+    normalizedType === 'הלוויה' ||
+    normalizedType === 'חתונה' ||
+    normalizedType === 'טקס'
+  ) {
+    return 'חג או מועד';
+  }
+
+  if (normalizedType === 'עבודות') {
+    return 'עבודות בכביש';
+  }
+
+  if (normalizedType === 'חסימה משטרתית') {
+    return 'פעילות משטרתית או בטחונית';
+  }
+
+  return 'סיבה אחרת';
+}
 
 function initializeLocationTypeButtons() {
   const primaryTypeInput =

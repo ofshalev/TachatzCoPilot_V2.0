@@ -1779,6 +1779,8 @@ function updateDeveloperSequenceHighlight(currentIndex) {
   if (event.origin !== window.location.origin) return;
 
   const message = event.data;
+    
+  console.log('Developer sequence message:', message);
 
   if (
     !message ||

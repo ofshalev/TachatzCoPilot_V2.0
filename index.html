@@ -1752,6 +1752,57 @@ function clearDeveloperSequenceHighlights() {
   });
 }
 
+
+function clearDeveloperSelectionHighlights() {
+  [
+    'developerChangeImpact',
+    'developerChangeReason',
+    'eventDistrictBox'
+  ].forEach(id => {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    const box =
+      id === 'eventDistrictBox'
+        ? element
+        : element.closest('.developer-selection-box');
+
+    if (!box) return;
+
+    box.style.outline = '';
+    box.style.background = '';
+    box.style.borderRadius = '';
+  });
+}
+
+function highlightDeveloperManualSelections() {
+  clearDeveloperSelectionHighlights();
+
+  [
+    'developerChangeImpact',
+    'developerChangeReason',
+    'eventDistrictBox'
+  ].forEach(id => {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    const box =
+      id === 'eventDistrictBox'
+        ? element
+        : element.closest('.developer-selection-box');
+
+    if (!box) return;
+
+    box.style.outline =
+      '2px solid var(--accent, #2563eb)';
+    box.style.background = '#eff6ff';
+    box.style.borderRadius = '8px';
+  });
+}
+
+  
 function updateDeveloperSequenceHighlight(currentIndex) {
   clearDeveloperSequenceHighlights();
 
@@ -1795,15 +1846,24 @@ function updateDeveloperSequenceHighlight(currentIndex) {
   );
 
   if (!message.running) {
-    if (extensionStatusTimer) {
-      clearInterval(extensionStatusTimer);
-      extensionStatusTimer = null;
-    }
-
-    setTimeout(() => {
-      clearDeveloperSequenceHighlights();
-    }, 3000);
+  if (extensionStatusTimer) {
+    clearInterval(extensionStatusTimer);
+    extensionStatusTimer = null;
   }
+
+  setTimeout(() => {
+    clearDeveloperSequenceHighlights();
+
+    highlightDeveloperManualSelections();
+
+    const sendStopsButton =
+      document.getElementById('sendDeveloperStopsBtn');
+
+    if (sendStopsButton && !sendStopsButton.disabled) {
+      sendStopsButton.click();
+    }
+  }, 3000);
+}
 }
 
   if (
@@ -1814,6 +1874,57 @@ function updateDeveloperSequenceHighlight(currentIndex) {
   }
 });
 
+
+function clearDeveloperSelectionHighlights() {
+  [
+    'developerChangeImpact',
+    'developerChangeReason',
+    'eventDistrictBox'
+  ].forEach(id => {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    const box =
+      id === 'eventDistrictBox'
+        ? element
+        : element.closest('.developer-selection-box');
+
+    if (!box) return;
+
+    box.style.outline = '';
+    box.style.background = '';
+    box.style.borderRadius = '';
+  });
+}
+
+function highlightDeveloperManualSelections() {
+  clearDeveloperSelectionHighlights();
+
+  [
+    'developerChangeImpact',
+    'developerChangeReason',
+    'eventDistrictBox'
+  ].forEach(id => {
+    const element = document.getElementById(id);
+
+    if (!element) return;
+
+    const box =
+      id === 'eventDistrictBox'
+        ? element
+        : element.closest('.developer-selection-box');
+
+    if (!box) return;
+
+    box.style.outline =
+      '2px solid var(--accent, #2563eb)';
+    box.style.background = '#eff6ff';
+    box.style.borderRadius = '8px';
+  });
+}
+
+  
 function normalizeRouteToken(token) {
   let t = String(token || '').replace(/\s+/g, '').trim();
   // Common extraction mistake in Hebrew: the ל from "לכיוון" sticks to the route number, e.g. 84ל / 85ל / 98ל.

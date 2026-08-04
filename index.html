@@ -1278,6 +1278,20 @@
       </div>
     </div>
 
+
+<div
+  id="estimatedEndTimeSection"
+  class="field"
+  style="margin-top:14px;"
+>
+  <h3 style="margin:0 0 10px;">
+    קבע שעת סיום משוערת
+  </h3>
+
+  <div id="eventTimeRangesList"></div>
+</div>
+
+    
     <input id="eventDateInput" type="hidden" />
 
   </div>
@@ -1609,11 +1623,7 @@
         <h3 style="margin:0;">הודעות לשילוט</h3>
         <div id="signageMessagesList"></div>
       </div>
-
-      <div id="eventTimeRanges" style="margin-top:20px;">
-        <h3 style="margin:0 0 10px;">זמן האירוע</h3>
-        <div id="eventTimeRangesList"></div>
-      </div>
+    
     </div>
   </section>
 
@@ -4889,7 +4899,6 @@ function renderEventTimeRanges(options = {}) {
     return group;
   }
 
-  row.appendChild(createStartGroup());
   row.appendChild(createEndGroup());
   list.appendChild(row);
   syncTrackingPlannedEndInput();

@@ -5378,35 +5378,6 @@ document.addEventListener('DOMContentLoaded', () => {
   enableTimeWheelControl();
 });
 
-  function updateDeveloperAutomationFields() {
-  const developerTitleOutput =
-    document.getElementById('developerTitleOutput');
-
-  const developerDatesOutput =
-    document.getElementById('developerDatesOutput');
-
-  const developerChangeReason =
-    document.getElementById('developerChangeReason');
-
-  const eventTitle =
-    document.getElementById('eventTitle')?.value.trim() || '';
-
-  const eventType = getEffectiveEventType();
-
-  if (developerTitleOutput) {
-    developerTitleOutput.value = eventTitle;
-  }
-
-  if (developerChangeReason) {
-    developerChangeReason.textContent =
-      getDeveloperChangeReason(eventType);
-  }
-
-  if (developerDatesOutput) {
-    developerDatesOutput.value =
-      buildDeveloperDateText();
-  }
-}
 
  function getDeveloperChangeReason(eventType) {
   const normalizedType = cleanText(eventType);

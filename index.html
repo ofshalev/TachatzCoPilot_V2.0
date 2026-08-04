@@ -1790,14 +1790,16 @@ function updateDeveloperSequenceHighlight(currentIndex) {
   }
 
   if (message.type === 'SEQUENCE_STATUS' && message.ok) {
-    updateDeveloperSequenceHighlight(
-      message.currentIndex
-    );
+  updateDeveloperSequenceHighlight(
+    message.currentIndex
+  );
 
-    if (!message.running) {
+  if (!message.running) {
+    setTimeout(() => {
       clearDeveloperSequenceHighlights();
-    }
+    }, 3000);
   }
+}
 
   if (
     message.type === 'SEQUENCE_STOPPED' ||

@@ -5549,6 +5549,17 @@ function initializeLocationTypeButtons() {
     return;
   }
 
+  function sendToTachatzCopierExtension(type, payload = {}) {
+  window.postMessage(
+    {
+      source: 'tachatz-copilot-page',
+      type,
+      ...payload
+    },
+    window.location.origin
+  );
+}
+
   function renderSecondaryButtons(primaryType) {
     secondaryButtonsContainer.innerHTML = '';
     secondaryTypeInput.value = '';

@@ -3390,6 +3390,7 @@ const formattedLocation =
     changeReason.textContent =
       getDeveloperChangeReason(eventType);
   }
+  syncDeveloperDateTimeOutputs();
 }
 
   function getDeveloperChangeReason(eventType) {
@@ -4690,6 +4691,30 @@ if (!group.validation.valid) {
     });
     }
 
+
+function syncDeveloperDateTimeOutputs() {
+  const startOutput =
+    document.getElementById('developerStartDateTimeOutput');
+
+  const endOutput =
+    document.getElementById('developerEndDateTimeOutput');
+
+  const startDate = getRealtimeStartDateTime();
+
+  const endDate =
+    parseDateTimeLocalValue(state.realtimeEndDateTime);
+
+  if (startOutput) {
+    startOutput.value =
+      startDate ? formatCopyDateTime(startDate) : '';
+  }
+
+  if (endOutput) {
+    endOutput.value =
+      endDate ? formatCopyDateTime(endDate) : '';
+  }
+}
+  
 function renderEventTimeRanges(options = {}) {
   const list = document.getElementById('eventTimeRangesList');
   if (!list) return;
@@ -4810,6 +4835,7 @@ function renderEventTimeRanges(options = {}) {
       timeInput.value =
         `${String(selectedEnd.getHours()).padStart(2, '0')}:` +
         `${String(selectedEnd.getMinutes()).padStart(2, '0')}`;
+      syncDeveloperDateTimeOutputs();
     }
 
     function saveTypedTime() {
@@ -4901,6 +4927,7 @@ function renderEventTimeRanges(options = {}) {
 
   row.appendChild(createEndGroup());
   list.appendChild(row);
+  syncDeveloperDateTimeOutputs();
   syncTrackingPlannedEndInput();
 }
 

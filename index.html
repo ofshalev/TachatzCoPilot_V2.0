@@ -5894,11 +5894,7 @@ const stopDeveloperSequenceButton =
   document.getElementById('stopDeveloperSequenceBtn');
 
 startDeveloperSequenceButton.addEventListener('click', () => {
-  if (!tachatzCopierExtensionReady) {
-    document.getElementById('developerTransferStatus').textContent =
-      'תוסף ההעתקה לא נמצא. יש לוודא שהוא מופעל ולרענן את הדף.';
-    return;
-  }
+ 
 
   const developerSequenceItems =
     getDeveloperSequenceItems();

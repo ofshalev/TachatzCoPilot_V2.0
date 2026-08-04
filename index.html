@@ -1380,7 +1380,6 @@
       <button
         id="startDeveloperSequenceBtn"
         type="button"
-        disabled
       >
         התחל העתקה רציפה
       </button>
@@ -5425,7 +5424,43 @@ document.addEventListener('DOMContentLoaded', () => {
   enableTimeWheelControl();
 });
 
-
+function getDeveloperSequenceItems() {
+  return [
+    {
+      key: 'title',
+      label: 'כותרת',
+      text: document
+        .getElementById('developerTitleOutput')
+        ?.value
+        .trim() || ''
+    },
+    {
+      key: 'content',
+      label: 'תוכן',
+      text: document
+        .getElementById('appsMessageOutput')
+        ?.value
+        .trim() || ''
+    },
+    {
+      key: 'start',
+      label: 'תאריך ושעת התחלה',
+      text: document
+        .getElementById('developerStartDateTimeOutput')
+        ?.value
+        .trim() || ''
+    },
+    {
+      key: 'end',
+      label: 'תאריך ושעת סיום',
+      text: document
+        .getElementById('developerEndDateTimeOutput')
+        ?.value
+        .trim() || ''
+    }
+  ].filter(item => item.text);
+}
+  
  function getDeveloperChangeReason(eventType) {
   const normalizedType = cleanText(eventType);
 
@@ -5816,7 +5851,64 @@ document.getElementById('impactBtn').addEventListener('click', async () => {
   }
 });
 
+const startDeveloperSequenceButton =
+  document.getElementById('startDeveloperSequenceBtn');
 
+const stopDeveloperSequenceButton =
+  document.getElementById('stopDeveloperSequenceBtn');
+
+startDeveloperSequenceButton.addEventListener('click', () => {
+  if (!tachatzCopierExtensionReady) {
+    document.getElementById('developerTransferStatus').textContent =
+      'תוסף ההעתקה לא נמצא. יש לוודא שהוא מופעל ולרענן את הדף.';
+    return;
+  }
+
+  const developerSequenceItems =
+    getDeveloperSequenceItems();
+
+  if (!developerSequenceItems.length) {
+    document.getElementById('developerTransferStatus').textContent =
+      'אין נתונים להעתקה.';
+    return;
+  }
+
+  startDeveloperSequenceButton.disabled = true;
+  stopDeveloperSequenceButton.disabled = false;
+
+  document.getElementById('developerTransferStatus').textContent =
+    `מתחילה העתקה רציפה של ${developerSequenceItems.length} פריטים...`;
+
+  sendToTachatzCopierExtension(
+    'START_TIME_SEQUENCE',
+    {
+      items: developerSequenceItems.map(item => item.text),
+      intervalMs: 3000
+    }
+  );
+
+  if (extensionStatusTimer) {
+    clearInterval(extensionStatusTimer);
+  }
+
+  extensionStatusTimer = setInterval(() => {
+    sendToTachatzCopierExtension(
+      'GET_TIME_SEQUENCE_STATUS'
+    );
+  }, 500);
+});
+
+stopDeveloperSequenceButton.addEventListener('click', () => {
+  sendToTachatzCopierExtension(
+    'STOP_TIME_SEQUENCE'
+  );
+
+  startDeveloperSequenceButton.disabled = false;
+  stopDeveloperSequenceButton.disabled = true;
+
+  document.getElementById('developerTransferStatus').textContent =
+    'ההעתקה הרציפה נעצרה.';
+});
 
 document.getElementById('copyTransferLinkBtn').addEventListener('click', () => {
   copyTransferPageLink(

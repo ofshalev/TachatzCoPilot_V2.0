@@ -3930,22 +3930,24 @@ function buildMatrix(rows) {
 }
 
 function normalizeSignageStopCode(value) {
-  /*
-    The signage export sometimes stores the public five-digit stop code
-    with a system prefix:
-
-      1100025638 -> 25638
-      100025702  -> 25702
-
-    GTFS and operator messages use only the final five digits.
-  */
-  const digits = String(value || '')
+  let digits = String(value || '')
     .replace(/[\u200e\u200f\u202a-\u202e\uFEFF]/g, '')
     .replace(/\.0+$/, '')
     .replace(/\D/g, '');
 
-  if (digits.length < 5) return '';
-  return digits.slice(-5);
+  if (!digits) {
+    return '';
+  }
+
+  // Signage system IDs may contain a prefix.
+  // Keep the public stop-code part.
+  if (digits.length > 5) {
+    digits = digits.slice(-5);
+  }
+
+  // Jerusalem contains short stop codes.
+  // 00066 should match GTFS stop code 66.
+  return digits.replace(/^0+(?=\d)/, '');
 }
 
 function buildSignage(rows) {
@@ -3956,6 +3958,8 @@ function buildSignage(rows) {
       .map(value => String(value || '').trim());
 
     let rawStopCode = firstValue(row, [
+      'matchedStopCode',
+      'matched_stop_code',
       'stop_code',
       'stop_id',
       'stationid',

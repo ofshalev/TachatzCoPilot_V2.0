@@ -5166,6 +5166,30 @@ function formatCopyDate(date) {
 
 
 
+const TACHATZ_REGION = 'jerusalem';
+
+const REGION_CONFIG = {
+  center: {
+    name: 'מרכז',
+    dataPath: './data/center'
+  },
+
+  haifa: {
+    name: 'חיפה והקריות',
+    dataPath: './data/haifa'
+  },
+
+  jerusalem: {
+    name: 'ירושלים',
+    dataPath: './data/jerusalem'
+  }
+};
+
+const ACTIVE_REGION =
+  REGION_CONFIG[TACHATZ_REGION] ||
+  REGION_CONFIG.center;
+  
+
 async function runImpactAnalysis() {
   const consolidated = consolidate(state.rows);
   if (!consolidated.length) {
@@ -5176,8 +5200,8 @@ async function runImpactAnalysis() {
   'טוען נתוני GTFS ושילוט...';
 
 const [matrixResponse, signageResponse] = await Promise.all([
-  fetch('./stop_route_matrix.csv?v=' + Date.now()),
-  fetch('./exportSignsStatus.csv?v=' + Date.now())
+  fetch(`${ACTIVE_REGION.dataPath}/stop_route_matrix.csv?v=${Date.now()}`),
+  fetch(`${ACTIVE_REGION.dataPath}/exportSignsStatus.csv?v=${Date.now()}`)
 ]);
 
 if (!matrixResponse.ok) {
